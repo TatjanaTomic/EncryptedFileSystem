@@ -40,28 +40,30 @@ namespace EncryptedFileSystem
             // tbUsername
             // 
             this.tbUsername.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbUsername.Location = new System.Drawing.Point(301, 113);
+            this.tbUsername.Location = new System.Drawing.Point(307, 111);
             this.tbUsername.Name = "tbUsername";
-            this.tbUsername.Size = new System.Drawing.Size(232, 26);
+            this.tbUsername.Size = new System.Drawing.Size(220, 26);
             this.tbUsername.TabIndex = 0;
             this.tbUsername.WordWrap = false;
+            this.tbUsername.Click += new System.EventHandler(this.tbUsername_Click);
             // 
             // tbPassword
             // 
             this.tbPassword.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbPassword.Location = new System.Drawing.Point(301, 179);
+            this.tbPassword.Location = new System.Drawing.Point(307, 177);
             this.tbPassword.Name = "tbPassword";
-            this.tbPassword.Size = new System.Drawing.Size(233, 26);
+            this.tbPassword.Size = new System.Drawing.Size(220, 26);
             this.tbPassword.TabIndex = 1;
             this.tbPassword.UseSystemPasswordChar = true;
             this.tbPassword.WordWrap = false;
+            this.tbPassword.Click += new System.EventHandler(this.tbPassword_Click);
             // 
             // lbUsername
             // 
             this.lbUsername.AutoSize = true;
             this.lbUsername.BackColor = System.Drawing.Color.Transparent;
             this.lbUsername.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbUsername.Location = new System.Drawing.Point(296, 89);
+            this.lbUsername.Location = new System.Drawing.Point(302, 87);
             this.lbUsername.Name = "lbUsername";
             this.lbUsername.Size = new System.Drawing.Size(114, 20);
             this.lbUsername.TabIndex = 2;
@@ -72,7 +74,7 @@ namespace EncryptedFileSystem
             this.lbPassword.AutoSize = true;
             this.lbPassword.BackColor = System.Drawing.Color.Transparent;
             this.lbPassword.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbPassword.Location = new System.Drawing.Point(296, 155);
+            this.lbPassword.Location = new System.Drawing.Point(302, 153);
             this.lbPassword.Name = "lbPassword";
             this.lbPassword.Size = new System.Drawing.Size(68, 20);
             this.lbPassword.TabIndex = 3;
@@ -83,12 +85,13 @@ namespace EncryptedFileSystem
             this.btnLogin.BackColor = System.Drawing.Color.DarkGray;
             this.btnLogin.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnLogin.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnLogin.Location = new System.Drawing.Point(337, 267);
+            this.btnLogin.Location = new System.Drawing.Point(334, 265);
             this.btnLogin.Name = "btnLogin";
             this.btnLogin.Size = new System.Drawing.Size(166, 41);
             this.btnLogin.TabIndex = 4;
             this.btnLogin.Text = "Prijavite se";
             this.btnLogin.UseVisualStyleBackColor = false;
+            this.btnLogin.Click += new System.EventHandler(this.btnLogin_Click);
             // 
             // lbRegister
             // 
@@ -96,11 +99,12 @@ namespace EncryptedFileSystem
             this.lbRegister.BackColor = System.Drawing.Color.Transparent;
             this.lbRegister.Cursor = System.Windows.Forms.Cursors.Hand;
             this.lbRegister.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Italic | System.Drawing.FontStyle.Underline))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbRegister.Location = new System.Drawing.Point(369, 330);
+            this.lbRegister.Location = new System.Drawing.Point(366, 328);
             this.lbRegister.Name = "lbRegister";
             this.lbRegister.Size = new System.Drawing.Size(98, 18);
             this.lbRegister.TabIndex = 5;
             this.lbRegister.Text = "Registrujte se";
+            this.lbRegister.Click += new System.EventHandler(this.lbRegister_Click);
             // 
             // LoginForm
             // 
