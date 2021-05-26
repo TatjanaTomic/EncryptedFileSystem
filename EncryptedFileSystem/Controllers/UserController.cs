@@ -72,7 +72,7 @@ namespace EncryptedFileSystem.Controllers
             {
                 try
                 {
-                    user = new User(lines[0], lines[1], int.Parse(lines[2]), lines[3]);
+                    user = new User(lines[0], lines[1], lines[2], lines[3]);
                 }
                 catch (Exception e)
                 {

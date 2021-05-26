@@ -13,7 +13,7 @@ namespace EncryptedFileSystem.Model
     {
         private readonly string name;
         private readonly string password;
-        private readonly int hashAlgorythm;
+        private readonly string hashAlgorythm;
         private readonly string encAlgorythm;
 
         public User()
@@ -24,9 +24,17 @@ namespace EncryptedFileSystem.Model
         public User(string name, string password, int hashAlgorythm, string encAlgorythm)
         {
             this.name = name;
+            this.password = Passwd(password, hashAlgorythm);
+            this.hashAlgorythm = hashAlgorythm.ToString();
+            this.encAlgorythm = encAlgorythm; 
+        }
+
+        public User(string name, string password, string hashAlgorythm, string encAlgorythm)
+        {
+            this.name = name;
             this.password = password;
             this.hashAlgorythm = hashAlgorythm;
-            this.encAlgorythm = encAlgorythm; 
+            this.encAlgorythm = encAlgorythm;
         }
 
         public override bool Equals(object obj)
@@ -53,7 +61,7 @@ namespace EncryptedFileSystem.Model
             CreateHome();
 
             DirectoryInfo users = new DirectoryInfo(Application.StartupPath + "\\Users");
-            string[] lines = { Name, Password, HashAlgorythm.ToString(), EncAlgorythm };
+            string[] lines = { Name, Passwd(), HashAlgorythm.ToString(), EncAlgorythm };
 
             try
             {
@@ -87,11 +95,23 @@ namespace EncryptedFileSystem.Model
             }
         }
 
+        private string Passwd()
+        {
+            string command = "openssl passwd -" + hashAlgorythm + " -salt password" + password;
+            return CommandPrompt.ExecuteCommandWithResponse(command);
+        }
+
+        private string Passwd(string _password, int _hashAlgorythm)
+        {
+            string command = "openssl passwd -" + _hashAlgorythm + " -salt password" + _password;
+            return CommandPrompt.ExecuteCommandWithResponse(command);
+        }
+
         public string Name => name;
 
         public string Password => password;
 
-        public int HashAlgorythm => hashAlgorythm;
+        public string HashAlgorythm => hashAlgorythm;
 
         public string EncAlgorythm => encAlgorythm;
 

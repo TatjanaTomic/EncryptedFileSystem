@@ -19,13 +19,27 @@ namespace EncryptedFileSystem.Utils
             process.StartInfo.CreateNoWindow = true;
 
             process.Start();
-
-            //StringBuilder q = new StringBuilder();
-            //while (!process.HasExited)
-            //{
-            //    q.Append(process.StandardOutput.ReadToEnd());
-            //}
             process.WaitForExit();
+        }
+
+        public static string ExecuteCommandWithResponse(String command)
+        {
+            var process = new Process();
+            process.StartInfo = new ProcessStartInfo("cmd.exe", "/C " + command);
+            process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.CreateNoWindow = true;
+
+            process.Start();
+            StringBuilder sb = new StringBuilder();
+            while (!process.HasExited)
+            {
+                sb.Append(process.StandardOutput.ReadToEnd());
+            }
+            process.WaitForExit();
+
+            return sb.ToString();
         }
     }
 }
