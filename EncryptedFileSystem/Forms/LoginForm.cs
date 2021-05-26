@@ -50,7 +50,7 @@ namespace EncryptedFileSystem
 
         private void lbRegister_Click(object sender, EventArgs e)
         {
-            new RegisterForm().Show();
+            new RegisterForm().ShowDialog();
         }
     }
 }

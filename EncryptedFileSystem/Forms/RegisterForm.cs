@@ -53,6 +53,13 @@ namespace EncryptedFileSystem.Forms
                 lbRepeatedPassword.ForeColor = Color.Red;
                 completed = false;
             }
+            if(!tbPassword.Text.Equals(tbRepeatedPassword.Text))
+            {
+                lbPassword.ForeColor = lbRepeatedPassword.ForeColor = Color.Red;
+                MessageBox.Show("Lozinke se ne poklapaju!", "Greška", MessageBoxButtons.OK);
+                tbPassword.Text = tbRepeatedPassword.Text = "";
+                completed = false;
+            }
 
             if(completed)
             {
@@ -74,7 +81,7 @@ namespace EncryptedFileSystem.Forms
                 {
                     if(UserController.RegisterUser(new Model.User(tbUsername.Text, tbPassword.Text, hashType, cbEncrypt.SelectedItem.ToString())))
                     {
-                        MessageBox.Show("Uspješno ste se registrovali na sistem!", "", MessageBoxButtons.OK);
+                        MessageBox.Show("Uspješno ste se registrovali na sistem!", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     else
                     {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EncryptedFileSystem.Utils;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -28,14 +29,6 @@ namespace EncryptedFileSystem.Model
             this.encAlgorythm = encAlgorythm; 
         }
 
-        public string Name => name;
-
-        public string Password => password;
-
-        public int HashAlgorythm => hashAlgorythm;
-
-        public string EncAlgorythm => encAlgorythm;
-
         public override bool Equals(object obj)
         {
             return obj is User user &&
@@ -57,17 +50,19 @@ namespace EncryptedFileSystem.Model
 
         public void WriteInfo()
         {
-            DirectoryInfo home = new DirectoryInfo(Application.StartupPath + "\\FileSystem" + "\\" + Name);
+            CreateHome();
+
+            DirectoryInfo users = new DirectoryInfo(Application.StartupPath + "\\Users");
+            string[] lines = { Name, Password, HashAlgorythm.ToString(), EncAlgorythm };
+
             try
             {
-                if(!home.Exists)
-                {
-                    home.Create();
-                }
+                File.WriteAllLines(users.FullName + "\\" + Name + ".txt", lines);
 
-                string[] lines = { Name, Password, HashAlgorythm.ToString(), EncAlgorythm };
-                File.WriteAllLines(home.FullName + "\\info.txt", lines);
+                string encryptCommand = "openssl aria-256-ecb -in Users/" + Name + ".txt -out Users/" + Name + "#.txt -pbkdf2 -k kriptografija -nosalt -base64";
+                CommandPrompt.ExecuteCommand(encryptCommand);
 
+                File.Delete(users.FullName + "\\" + Name + ".txt");
             }
             catch (Exception e)
             {
@@ -75,6 +70,30 @@ namespace EncryptedFileSystem.Model
             }
 
         }
+
+        private void CreateHome()
+        {
+            DirectoryInfo home = new DirectoryInfo(Application.StartupPath + "\\FileSystem\\" + Name);
+            try
+            {
+                if (!home.Exists)
+                {
+                    home.Create();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
+
+        public string Name => name;
+
+        public string Password => password;
+
+        public int HashAlgorythm => hashAlgorythm;
+
+        public string EncAlgorythm => encAlgorythm;
 
     }
 }
