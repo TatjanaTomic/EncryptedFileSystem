@@ -16,19 +16,6 @@ namespace EncryptedFileSystem.Model
         private readonly string hashAlgorythm;
         private readonly string encAlgorythm;
 
-        public User()
-        {
-
-        }
-
-        public User(string name, string password, int hashAlgorythm, string encAlgorythm)
-        {
-            this.name = name;
-            this.password = Passwd(password, hashAlgorythm);
-            this.hashAlgorythm = hashAlgorythm.ToString();
-            this.encAlgorythm = encAlgorythm; 
-        }
-
         public User(string name, string password, string hashAlgorythm, string encAlgorythm)
         {
             this.name = name;
@@ -61,7 +48,7 @@ namespace EncryptedFileSystem.Model
             CreateHome();
 
             DirectoryInfo users = new DirectoryInfo(Application.StartupPath + "\\Users");
-            string[] lines = { Name, Passwd(), HashAlgorythm.ToString(), EncAlgorythm };
+            string[] lines = { Name, password, HashAlgorythm.ToString(), EncAlgorythm };
 
             try
             {
@@ -93,18 +80,6 @@ namespace EncryptedFileSystem.Model
             {
                 Console.WriteLine(e.Message);
             }
-        }
-
-        private string Passwd()
-        {
-            string command = "openssl passwd -" + hashAlgorythm + " -salt password" + password;
-            return CommandPrompt.ExecuteCommandWithResponse(command);
-        }
-
-        private string Passwd(string _password, int _hashAlgorythm)
-        {
-            string command = "openssl passwd -" + _hashAlgorythm + " -salt password" + _password;
-            return CommandPrompt.ExecuteCommandWithResponse(command);
         }
 
         public string Name => name;

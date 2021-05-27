@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using EncryptedFileSystem.Controllers;
+using EncryptedFileSystem.Exceptions;
 
 namespace EncryptedFileSystem.Forms
 {
@@ -56,42 +51,42 @@ namespace EncryptedFileSystem.Forms
             if(!tbPassword.Text.Equals(tbRepeatedPassword.Text))
             {
                 lbPassword.ForeColor = lbRepeatedPassword.ForeColor = Color.Red;
-                MessageBox.Show("Lozinke se ne poklapaju!", "Greška", MessageBoxButtons.OK);
+                MessageBox.Show("Lozinke se ne poklapaju!", "Greška", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 tbPassword.Text = tbRepeatedPassword.Text = "";
                 completed = false;
             }
 
             if(completed)
             {
-                int hashType = 1;
+                string hashAlgorythm = "";
                 switch(cbHash.SelectedIndex)
                 {
                     case 0:
-                        hashType = 1;
+                        hashAlgorythm = "1";
                         break;
                     case 1:
-                        hashType = 5;
+                        hashAlgorythm = "5";
                         break;
                     case 2:
-                        hashType = 6;
+                        hashAlgorythm = "6";
                         break;
                 }
 
-                if (!UserController.CheckNameExists(tbUsername.Text.ToLower()))
+                try
                 {
-                    if(UserController.RegisterUser(new Model.User(tbUsername.Text, tbPassword.Text, hashType, cbEncrypt.SelectedItem.ToString())))
-                    {
-                        MessageBox.Show("Uspješno ste se registrovali na sistem!", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    else
-                    {
-                        MessageBox.Show("Došlo je do greške prilikom registracije na sistem.", "Greška", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
+                    UserController.RegisterUser(tbUsername.Text, tbPassword.Text, hashAlgorythm, cbEncrypt.SelectedItem.ToString());
+                    MessageBox.Show("Uspješno ste se registrovali na sistem!", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
-                else
+                catch (EfsException ex)
                 {
-                    MessageBox.Show("Uneseno korisničko ime već postoji! Molimo Vas da unesete novo korisničko ime.", "Greška", MessageBoxButtons.OK);
+                    MessageBox.Show(ex.Message, "Greška", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Došlo je do greške prilikom registracije na sistem!", "Greška", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Console.WriteLine(ex.StackTrace + " : " + ex.Message);
+                }
+                
             }
         }
     }

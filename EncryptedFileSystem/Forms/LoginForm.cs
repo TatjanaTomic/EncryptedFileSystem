@@ -1,4 +1,8 @@
-﻿using EncryptedFileSystem.Forms;
+﻿using EncryptedFileSystem.Controllers;
+using EncryptedFileSystem.Exceptions;
+using EncryptedFileSystem.Forms;
+using EncryptedFileSystem.Model;
+using EncryptedFileSystem.Utils;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -34,7 +38,19 @@ namespace EncryptedFileSystem
 
             if (!username.Equals("") && !password.Equals(""))
             {
-                //TODO: Dodati prijavu na sistem sa provjerama
+                try
+                {
+                    User currentUser = UserController.LoginUser(username, password);
+                }
+                catch (EfsException ex)
+                {
+                    MessageBox.Show(ex.Message, "Greška", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Došlo je do greške prilikom prijave na sistem!", "Greška", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Console.WriteLine(ex.StackTrace + " : " + ex.Message);
+                }
             }
         }
 
