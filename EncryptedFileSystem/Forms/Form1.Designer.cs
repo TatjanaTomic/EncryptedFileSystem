@@ -45,7 +45,7 @@ namespace EncryptedFileSystem
             this.tbUsername.Size = new System.Drawing.Size(220, 26);
             this.tbUsername.TabIndex = 0;
             this.tbUsername.WordWrap = false;
-            this.tbUsername.Click += new System.EventHandler(this.tbUsername_Click);
+            this.tbUsername.Click += new System.EventHandler(this.TbUsername_Click);
             // 
             // tbPassword
             // 
@@ -56,7 +56,7 @@ namespace EncryptedFileSystem
             this.tbPassword.TabIndex = 1;
             this.tbPassword.UseSystemPasswordChar = true;
             this.tbPassword.WordWrap = false;
-            this.tbPassword.Click += new System.EventHandler(this.tbPassword_Click);
+            this.tbPassword.Click += new System.EventHandler(this.TbPassword_Click);
             // 
             // lbUsername
             // 
@@ -91,7 +91,7 @@ namespace EncryptedFileSystem
             this.btnLogin.TabIndex = 4;
             this.btnLogin.Text = "Prijavite se";
             this.btnLogin.UseVisualStyleBackColor = false;
-            this.btnLogin.Click += new System.EventHandler(this.btnLogin_Click);
+            this.btnLogin.Click += new System.EventHandler(this.BtnLogin_Click);
             // 
             // lbRegister
             // 
@@ -104,7 +104,7 @@ namespace EncryptedFileSystem
             this.lbRegister.Size = new System.Drawing.Size(98, 18);
             this.lbRegister.TabIndex = 5;
             this.lbRegister.Text = "Registrujte se";
-            this.lbRegister.Click += new System.EventHandler(this.lbRegister_Click);
+            this.lbRegister.Click += new System.EventHandler(this.LbRegister_Click);
             // 
             // LoginForm
             // 

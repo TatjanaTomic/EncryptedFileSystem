@@ -61,7 +61,7 @@ namespace EncryptedFileSystem.Model
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace + " : " + e.Message);
             }
 
         }
@@ -78,7 +78,7 @@ namespace EncryptedFileSystem.Model
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace + " : " + e.Message);
             }
         }
 

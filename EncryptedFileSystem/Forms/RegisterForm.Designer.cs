@@ -50,7 +50,7 @@ namespace EncryptedFileSystem.Forms
             this.tbUsername.Size = new System.Drawing.Size(220, 26);
             this.tbUsername.TabIndex = 0;
             this.tbUsername.WordWrap = false;
-            this.tbUsername.Click += new System.EventHandler(this.tbUsername_Click);
+            this.tbUsername.Click += new System.EventHandler(this.TbUsername_Click);
             // 
             // tbPassword
             // 
@@ -61,7 +61,7 @@ namespace EncryptedFileSystem.Forms
             this.tbPassword.TabIndex = 1;
             this.tbPassword.UseSystemPasswordChar = true;
             this.tbPassword.WordWrap = false;
-            this.tbPassword.Click += new System.EventHandler(this.tbPassword_Click);
+            this.tbPassword.Click += new System.EventHandler(this.TbPassword_Click);
             // 
             // lbUsername
             // 
@@ -96,7 +96,7 @@ namespace EncryptedFileSystem.Forms
             this.btnRegister.TabIndex = 4;
             this.btnRegister.Text = "Registrujte se";
             this.btnRegister.UseVisualStyleBackColor = false;
-            this.btnRegister.Click += new System.EventHandler(this.btnRegister_Click);
+            this.btnRegister.Click += new System.EventHandler(this.BtnRegister_Click);
             // 
             // lbRepeatedPassword
             // 
@@ -118,7 +118,7 @@ namespace EncryptedFileSystem.Forms
             this.tbRepeatedPassword.TabIndex = 5;
             this.tbRepeatedPassword.UseSystemPasswordChar = true;
             this.tbRepeatedPassword.WordWrap = false;
-            this.tbRepeatedPassword.Click += new System.EventHandler(this.tbRepeatedPassword_Click);
+            this.tbRepeatedPassword.Click += new System.EventHandler(this.TbRepeatedPassword_Click);
             // 
             // cbHash
             // 

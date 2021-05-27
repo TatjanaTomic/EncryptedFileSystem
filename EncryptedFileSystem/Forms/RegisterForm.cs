@@ -15,40 +15,44 @@ namespace EncryptedFileSystem.Forms
             cbEncrypt.SelectedIndex = 0;
         }
 
-        private void tbUsername_Click(object sender, EventArgs e)
+        private void TbUsername_Click(object sender, EventArgs e)
         {
             lbUsername.ForeColor = SystemColors.ControlText;
         }
 
-        private void tbPassword_Click(object sender, EventArgs e)
+        private void TbPassword_Click(object sender, EventArgs e)
         {
             lbPassword.ForeColor = SystemColors.ControlText;
         }
 
-        private void tbRepeatedPassword_Click(object sender, EventArgs e)
+        private void TbRepeatedPassword_Click(object sender, EventArgs e)
         {
             lbRepeatedPassword.ForeColor = SystemColors.ControlText;
         }
 
-        private void btnRegister_Click(object sender, EventArgs e)
+        private void BtnRegister_Click(object sender, EventArgs e)
         {
+            string username = tbUsername.Text = tbUsername.Text.Trim();
+            string password = tbPassword.Text = tbPassword.Text.Trim();
+            string repeatedPassword = tbRepeatedPassword.Text = tbRepeatedPassword.Text.Trim();
+
             bool completed = true;
-            if (tbUsername.Text.Equals(""))
+            if (string.IsNullOrEmpty(username))
             {
                 lbUsername.ForeColor = Color.Red;
                 completed = false;
             }
-            if (tbPassword.Text.Equals(""))
+            if (string.IsNullOrEmpty(password))
             {
                 lbPassword.ForeColor = Color.Red;
                 completed = false;
             }
-            if (tbRepeatedPassword.Text.Equals(""))
+            if (string.IsNullOrEmpty(repeatedPassword))
             {
                 lbRepeatedPassword.ForeColor = Color.Red;
                 completed = false;
             }
-            if(!tbPassword.Text.Equals(tbRepeatedPassword.Text))
+            if(!password.Equals(repeatedPassword))
             {
                 lbPassword.ForeColor = lbRepeatedPassword.ForeColor = Color.Red;
                 MessageBox.Show("Lozinke se ne poklapaju!", "Greška", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -74,8 +78,8 @@ namespace EncryptedFileSystem.Forms
 
                 try
                 {
-                    UserController.RegisterUser(tbUsername.Text, tbPassword.Text, hashAlgorythm, cbEncrypt.SelectedItem.ToString());
-                    MessageBox.Show("Uspješno ste se registrovali na sistem!", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    UserController.RegisterUser(username, password, hashAlgorythm, cbEncrypt.SelectedItem.ToString());
+                    MessageBox.Show("Uspješno ste se registrovali! Možete da se prijavite na sistem pomoću korisničkog imena: " + tbUsername.Text, "", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 catch (EfsException ex)
                 {
@@ -85,6 +89,7 @@ namespace EncryptedFileSystem.Forms
                 {
                     MessageBox.Show("Došlo je do greške prilikom registracije na sistem!", "Greška", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     Console.WriteLine(ex.StackTrace + " : " + ex.Message);
+                    this.Close();
                 }
                 
             }

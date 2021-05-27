@@ -21,22 +21,36 @@ namespace EncryptedFileSystem
         {
             InitializeComponent();
         }
-
-        private void btnLogin_Click(object sender, EventArgs e)
+        private void TbUsername_Click(object sender, EventArgs e)
         {
-            string username = tbUsername.Text;
-            string password = tbPassword.Text;
+            lbUsername.ForeColor = SystemColors.ControlText;
+        }
 
-            if (username.Equals(""))
+        private void TbPassword_Click(object sender, EventArgs e)
+        {
+            lbPassword.ForeColor = SystemColors.ControlText;
+        }
+
+        private void LbRegister_Click(object sender, EventArgs e)
+        {
+            new RegisterForm().ShowDialog();
+        }
+
+        private void BtnLogin_Click(object sender, EventArgs e)
+        {
+            string username = tbUsername.Text = tbUsername.Text.Trim();
+            string password = tbPassword.Text = tbPassword.Text.Trim();
+
+            if (string.IsNullOrEmpty(username))
             {
                 lbUsername.ForeColor = Color.Red;
             }
-            if (password.Equals(""))
+            if (string.IsNullOrEmpty(password))
             {
                 lbPassword.ForeColor = Color.Red;
             }
 
-            if (!username.Equals("") && !password.Equals(""))
+            if (!(string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password)))
             {
                 try
                 {
@@ -54,19 +68,5 @@ namespace EncryptedFileSystem
             }
         }
 
-        private void tbUsername_Click(object sender, EventArgs e)
-        {
-            lbUsername.ForeColor = SystemColors.ControlText;
-        }
-
-        private void tbPassword_Click(object sender, EventArgs e)
-        {
-            lbPassword.ForeColor = SystemColors.ControlText;
-        }
-
-        private void lbRegister_Click(object sender, EventArgs e)
-        {
-            new RegisterForm().ShowDialog();
-        }
     }
 }
