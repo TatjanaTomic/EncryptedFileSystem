@@ -55,6 +55,7 @@ namespace EncryptedFileSystem
                 try
                 {
                     User currentUser = UserController.LoginUser(username, password);
+                    new MainForm(currentUser).Show();
                 }
                 catch (EfsException ex)
                 {

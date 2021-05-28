@@ -80,6 +80,7 @@ namespace EncryptedFileSystem.Forms
                 {
                     UserController.RegisterUser(username, password, hashAlgorythm, cbEncrypt.SelectedItem.ToString());
                     MessageBox.Show("Uspješno ste se registrovali! Možete da se prijavite na sistem pomoću korisničkog imena: " + tbUsername.Text, "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    this.Close();
                 }
                 catch (EfsException ex)
                 {
