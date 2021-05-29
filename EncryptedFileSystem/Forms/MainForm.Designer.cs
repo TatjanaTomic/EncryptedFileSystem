@@ -30,6 +30,7 @@ namespace EncryptedFileSystem.Forms
         private void InitializeComponent()
         {
             this.FileSystemView = new System.Windows.Forms.TreeView();
+            this.btnDelete = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // FileSystemView
@@ -41,6 +42,16 @@ namespace EncryptedFileSystem.Forms
             this.FileSystemView.Size = new System.Drawing.Size(349, 529);
             this.FileSystemView.TabIndex = 0;
             // 
+            // btnDelete
+            // 
+            this.btnDelete.Location = new System.Drawing.Point(12, 504);
+            this.btnDelete.Name = "btnDelete";
+            this.btnDelete.Size = new System.Drawing.Size(123, 41);
+            this.btnDelete.TabIndex = 2;
+            this.btnDelete.Text = "Obriši";
+            this.btnDelete.UseVisualStyleBackColor = true;
+            this.btnDelete.Click += new System.EventHandler(this.BtnDelete_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -48,6 +59,7 @@ namespace EncryptedFileSystem.Forms
             this.BackgroundImage = global::EncryptedFileSystem.Properties.Resources.cryptoBg;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.ClientSize = new System.Drawing.Size(884, 561);
+            this.Controls.Add(this.btnDelete);
             this.Controls.Add(this.FileSystemView);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -61,5 +73,6 @@ namespace EncryptedFileSystem.Forms
         #endregion
 
         private System.Windows.Forms.TreeView FileSystemView;
+        private System.Windows.Forms.Button btnDelete;
     }
 }
