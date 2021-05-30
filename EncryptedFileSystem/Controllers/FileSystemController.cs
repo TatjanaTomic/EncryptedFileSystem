@@ -18,6 +18,34 @@ namespace EncryptedFileSystem.Controllers
         private static readonly string USERS_PATH = Application.StartupPath + "\\Users";
         private static readonly string SHARED_PATH = Application.StartupPath + "\\Shared";
 
+        public static void OpenFile(FileInfo selectedFile, string username)
+        {
+            if(selectedFile.Exists)
+            {
+                User user = UserController.ReadUserInfo(username);
+
+                if (!Verify(username, user.HashAlgorythm, selectedFile))
+                    throw new EfsException("Datoteka " + selectedFile.Name + " ne može da se otvori jer je narušen njen integritet!");
+                else
+                {
+                    System.Diagnostics.Process.Start(selectedFile.FullName);
+                    //File.Open(selectedFile.FullName, FileMode.Open);
+                }
+            }
+        }
+
+        private static bool Verify(string username, string hashAlgorythm, FileInfo file)
+        {
+            hashAlgorythm = GetHashAlgorythm(hashAlgorythm);
+            string publicKey = CERTS_PATH + "\\public\\" + username + "_public.key";
+            string signature = file.FullName.Insert(file.FullName.LastIndexOf('.'), "#");
+
+            string command = "openssl dgst " + hashAlgorythm + " -verify " + publicKey + " -signature " + signature + " " + file.FullName;
+            var result = CommandPrompt.ExecuteCommandWithResponse(command);
+
+            return result.Trim().Equals("Verified OK");
+        }
+
         public static void Upload(string username, string hostPath, string efsPath)
         {
             if (!File.Exists(hostPath))
@@ -59,6 +87,16 @@ namespace EncryptedFileSystem.Controllers
 
         private static void Digest(string username, string hashAlgorythm, string inFile)
         {
+            hashAlgorythm = GetHashAlgorythm(hashAlgorythm);
+            string privateKey = CERTS_PATH + "\\private\\" + username + "_private.key";
+            string outFile = inFile.Insert(inFile.LastIndexOf('.'), "#");
+
+            string command = "openssl dgst " + hashAlgorythm + " -sign " + privateKey + " -out " + outFile + " " + inFile;
+            CommandPrompt.ExecuteCommand(command);
+        }
+
+        private static string GetHashAlgorythm(string hashAlgorythm)
+        {
             switch (hashAlgorythm)
             {
                 case "1":
@@ -72,11 +110,7 @@ namespace EncryptedFileSystem.Controllers
                     break;
             }
 
-            string privateKey = CERTS_PATH + "\\private\\" + username + "_private.key";
-            string outFile = inFile.Insert(inFile.LastIndexOf('.'), "#");
-
-            string command = "openssl dgst " + hashAlgorythm + " -sign " + privateKey + " -out " + outFile + " " + inFile;
-            CommandPrompt.ExecuteCommand(command);
+            return hashAlgorythm;
         }
     }
 }

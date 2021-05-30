@@ -42,6 +42,7 @@ namespace EncryptedFileSystem.Forms
             this.FileSystemView.Name = "FileSystemView";
             this.FileSystemView.Size = new System.Drawing.Size(349, 529);
             this.FileSystemView.TabIndex = 0;
+            this.FileSystemView.DoubleClick += new System.EventHandler(this.FileSystemView_DoubleClick);
             // 
             // btnDelete
             // 

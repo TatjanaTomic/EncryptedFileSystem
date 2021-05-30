@@ -163,5 +163,28 @@ namespace EncryptedFileSystem.Forms
             }
 
         }
+
+        private void FileSystemView_DoubleClick(object sender, EventArgs e)
+        {
+
+            //TODO: Dodati provjere za otvaranje datoteka iz shared foldera!!!
+
+            if(FileSystemView.SelectedNode.Tag.GetType() == typeof(FileInfo))
+            {
+                try
+                {
+                    FileSystemController.OpenFile((FileInfo)FileSystemView.SelectedNode.Tag, home);
+                }
+                catch (EfsException ex)
+                {
+                    MessageBox.Show(ex.Message, string.Empty, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Došlo je do greške prilikom otvaranja datoteke!", "Greška", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Console.WriteLine(ex.StackTrace + " : " + ex.Message);
+                }
+            }
+        }
     }
 }
