@@ -62,7 +62,7 @@ namespace EncryptedFileSystem.Forms
 
             if(completed)
             {
-                string hashAlgorythm = "";
+                string hashAlgorythm = String.Empty;
                 switch(cbHash.SelectedIndex)
                 {
                     case 0:
@@ -79,7 +79,7 @@ namespace EncryptedFileSystem.Forms
                 try
                 {
                     UserController.RegisterUser(username, password, hashAlgorythm, cbEncrypt.SelectedItem.ToString());
-                    MessageBox.Show("Uspješno ste se registrovali! Možete da se prijavite na sistem pomoću korisničkog imena: " + tbUsername.Text, "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Uspješno ste se registrovali! Možete da se prijavite na sistem pomoću korisničkog imena: " + tbUsername.Text, String.Empty, MessageBoxButtons.OK, MessageBoxIcon.Information);
                     this.Close();
                 }
                 catch (EfsException ex)

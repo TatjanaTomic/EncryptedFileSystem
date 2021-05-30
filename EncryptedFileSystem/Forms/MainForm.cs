@@ -1,4 +1,5 @@
 ﻿using EncryptedFileSystem.Controllers;
+using EncryptedFileSystem.Exceptions;
 using EncryptedFileSystem.Model;
 using System;
 using System.Collections.Generic;
@@ -35,6 +36,7 @@ namespace EncryptedFileSystem.Forms
             {
                 Name = FS_PATH + "\\" + home,
                 Text = home,
+                Tag = new DirectoryInfo(FS_PATH + "\\" + home)
             };
             FileSystemView.Nodes.Add(root);
             AddChildren(root);
@@ -42,7 +44,8 @@ namespace EncryptedFileSystem.Forms
             TreeNode shared = new TreeNode
             {
                 Name = SHARED_PATH,
-                Text = "Shared"
+                Text = "Shared",
+                Tag = new FileInfo(SHARED_PATH)
             };
             FileSystemView.Nodes.Add(shared);
             AddChildren(shared);
@@ -57,12 +60,16 @@ namespace EncryptedFileSystem.Forms
             var files = home.GetFiles();
             foreach (var file in files)
             {
-                TreeNode child = new TreeNode
+                if (!file.Name.Contains('#'))
                 {
-                    Name = file.FullName,
-                    Text = file.Name
-                };
-                parent.Nodes.Add(child);
+                    TreeNode child = new TreeNode
+                    {
+                        Name = file.FullName,
+                        Text = file.Name,
+                        Tag = file
+                    };
+                    parent.Nodes.Add(child);
+                }
             }
 
             var directories = home.GetDirectories();
@@ -71,7 +78,8 @@ namespace EncryptedFileSystem.Forms
                 TreeNode child = new TreeNode
                 {
                     Name = directory.FullName,
-                    Text = directory.Name
+                    Text = directory.Name,
+                    Tag = directory
                 };
                 parent.Nodes.Add(child);
 
@@ -85,7 +93,7 @@ namespace EncryptedFileSystem.Forms
 
             if(selectedNode == null)
             {
-                MessageBox.Show("Izaberite datoteku ili direktorijum koji želite da obrišete", "", MessageBoxButtons.OK);
+                MessageBox.Show("Izaberite datoteku ili direktorijum koji želite da obrišete", String.Empty, MessageBoxButtons.OK);
             }
             else
             {
@@ -100,12 +108,12 @@ namespace EncryptedFileSystem.Forms
                 //TODO: Realizovati brisanje fajlova iz shared foldera
                 else
                 {
-                    var result = MessageBox.Show("Da li ste sigurni da želite obrisati fajl/folder '" + selectedNode.Text + "' ?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    var result = MessageBox.Show("Da li ste sigurni da želite obrisati fajl/folder '" + selectedNode.Text + "' ?", String.Empty, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                     if (result.Equals(DialogResult.Yes))
                     {
                         try
                         {
-                            FileSystemController.DeleteFromFileSystem(selectedNode.Name, selectedNode.GetNodeCount(false));
+                            FileSystemController.DeleteFromFileSystem(selectedNode.Name, selectedNode.Tag);
                             LoadFiles();
                         }
                         catch (Exception ex)
@@ -116,6 +124,44 @@ namespace EncryptedFileSystem.Forms
                     }
                 }
             }
+        }
+        
+        private void BtnUpload_Click(object sender, EventArgs e)
+        {
+            var selectedNode = FileSystemView.SelectedNode;
+            string resultPath;
+            if (selectedNode == null)
+                resultPath = FS_PATH + "\\" + home;
+            else
+            {
+                if (selectedNode.Tag.GetType() == typeof(FileInfo))
+                {
+                    resultPath = selectedNode.Name.Substring(0, selectedNode.Name.LastIndexOf("\\"));
+                }
+                else
+                    resultPath = selectedNode.Name;
+            }
+
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    FileSystemController.Upload(home, openFileDialog.FileName, resultPath);
+                    LoadFiles();
+                }
+                catch (EfsException ex)
+                {
+                    MessageBox.Show(ex.Message, string.Empty, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Došlo je do greške prilikom upload-a", "Greška", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Console.WriteLine(ex.StackTrace + " : " + ex.Message);
+                }
+            }
+
         }
     }
 }

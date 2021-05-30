@@ -31,6 +31,7 @@ namespace EncryptedFileSystem.Forms
         {
             this.FileSystemView = new System.Windows.Forms.TreeView();
             this.btnDelete = new System.Windows.Forms.Button();
+            this.btnUpload = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // FileSystemView
@@ -52,6 +53,16 @@ namespace EncryptedFileSystem.Forms
             this.btnDelete.UseVisualStyleBackColor = true;
             this.btnDelete.Click += new System.EventHandler(this.BtnDelete_Click);
             // 
+            // btnUpload
+            // 
+            this.btnUpload.Location = new System.Drawing.Point(12, 371);
+            this.btnUpload.Name = "btnUpload";
+            this.btnUpload.Size = new System.Drawing.Size(123, 41);
+            this.btnUpload.TabIndex = 3;
+            this.btnUpload.Text = "Upload";
+            this.btnUpload.UseVisualStyleBackColor = true;
+            this.btnUpload.Click += new System.EventHandler(this.BtnUpload_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -59,6 +70,7 @@ namespace EncryptedFileSystem.Forms
             this.BackgroundImage = global::EncryptedFileSystem.Properties.Resources.cryptoBg;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.ClientSize = new System.Drawing.Size(884, 561);
+            this.Controls.Add(this.btnUpload);
             this.Controls.Add(this.btnDelete);
             this.Controls.Add(this.FileSystemView);
             this.MaximizeBox = false;
@@ -74,5 +86,6 @@ namespace EncryptedFileSystem.Forms
 
         private System.Windows.Forms.TreeView FileSystemView;
         private System.Windows.Forms.Button btnDelete;
+        private System.Windows.Forms.Button btnUpload;
     }
 }

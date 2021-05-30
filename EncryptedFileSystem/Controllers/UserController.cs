@@ -81,7 +81,7 @@ namespace EncryptedFileSystem.Controllers
             return exists;
         }
 
-        private static User ReadUserInfo(string name)
+        public static User ReadUserInfo(string name)
         {
             string[] lines = null;
             User user = null;
