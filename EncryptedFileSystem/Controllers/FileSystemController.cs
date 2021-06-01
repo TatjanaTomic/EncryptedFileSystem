@@ -29,9 +29,88 @@ namespace EncryptedFileSystem.Controllers
                 else
                 {
                     System.Diagnostics.Process.Start(selectedFile.FullName);
-                    //File.Open(selectedFile.FullName, FileMode.Open);
                 }
             }
+        }
+
+        public static void CreateNewFile(string username, string relativePath, string fileName, string content)
+        {
+            if (!fileName.EndsWith(".txt"))
+                fileName += ".txt";
+            string absolutePath = FS_PATH + "\\" + relativePath + "\\" + fileName;
+
+            if (File.Exists(absolutePath))
+            {
+                throw new EfsException("Na izabranoj putanji postoji fajl sa unesenim nazivom. Unesite novi naziv.");
+            }
+            else
+            {
+                User user = UserController.ReadUserInfo(username);
+                File.WriteAllText(absolutePath, content);
+
+                Digest(user.Name, user.HashAlgorythm, absolutePath);
+            }
+        }
+
+        public static void EditFile(string username, string relativePath, string fileName, string content)
+        {
+            string absolutePath = FS_PATH + "\\" + relativePath + "\\" + fileName;
+
+            User user = UserController.ReadUserInfo(username);
+            File.WriteAllText(absolutePath, content);
+
+            Digest(user.Name, user.HashAlgorythm, absolutePath);
+        }
+
+        public static string GetFileContent(string username, FileInfo file)
+        {
+            User user = UserController.ReadUserInfo(username);
+            string content;
+
+            if (!file.Exists)
+                throw new EfsException("Došlo je do greške prilikom otvaranja datoteke.");
+            else if(!Verify(user.Name, user.HashAlgorythm, file))
+            {
+                throw new EfsException("Ne može se urediti datoteka " + file.Name + " jer je narušen njen integritet!");
+            }
+            else
+            {
+                content = File.ReadAllText(file.FullName);   
+            }
+
+            return content;
+        }
+
+
+        public static string DownloadFile(FileInfo selectedFile, string username)
+        {
+            //TODO: Nedovršeno
+            User user = UserController.ReadUserInfo(username);
+            string hostPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\" + selectedFile.Name;
+
+            if (!Verify(username, user.HashAlgorythm, selectedFile))
+                throw new EfsException("Datoteka " + selectedFile.Name + " ne može da se preuzme jer je narušen njen integritet!");
+            else
+            {
+                File.Copy(selectedFile.FullName, hostPath);
+            }
+
+            return hostPath;
+        }
+
+        public static void DeleteFromShared()
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void MakeDirectory(string username, string relativePath, string name)
+        {
+            string absolutePath = FS_PATH + "\\" + relativePath + "\\" + name;
+
+            if (Directory.Exists(absolutePath))
+                throw new EfsException("Već postoji direktorijum sa unesenim nazivom na izabranoj putanji!");
+            else
+                Directory.CreateDirectory(absolutePath);
         }
 
         private static bool Verify(string username, string hashAlgorythm, FileInfo file)
@@ -52,6 +131,8 @@ namespace EncryptedFileSystem.Controllers
                 throw new EfsException("Došlo je do greške prilikom upload-a. Izaberite drugu datoteku.");
             else
             {
+                //TODO: Dodati provjeru naziva, ne mogu se dodati datoteke sa istim nazivom
+
                 User user = UserController.ReadUserInfo(username);
                 FileInfo selectedFile = new FileInfo(hostPath);
 
@@ -59,7 +140,7 @@ namespace EncryptedFileSystem.Controllers
                     throw new EfsException("Tip datoteke nije podržan!");
                 else
                 {
-                    string newPath = efsPath + "\\" + selectedFile.Name;
+                    string newPath = efsPath + "\\" + selectedFile.Name.Replace(' ', '_').Replace('#', '_');
                     File.Copy(hostPath, newPath);
 
                     Digest(user.Name, user.HashAlgorythm, newPath);
@@ -73,7 +154,11 @@ namespace EncryptedFileSystem.Controllers
         public static void DeleteFromFileSystem(string path, Object o)
         {
             if (o.GetType() == typeof(FileInfo))
+            {
                 File.Delete(path);
+                string signature = path.Insert(path.LastIndexOf('.'), "#");
+                File.Delete(signature);
+            }
             else
                 Directory.Delete(path, true);
         }

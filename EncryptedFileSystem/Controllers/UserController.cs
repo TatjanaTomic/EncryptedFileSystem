@@ -63,7 +63,31 @@ namespace EncryptedFileSystem.Controllers
                 else
                     throw new EfsException("Došlo je do greške prilikom prijave na sistem!");
             }
+        }
 
+        public static User ReadUserInfo(string name)
+        {
+            User user = null;
+
+            string decryptCommand = "openssl aria-256-ecb -d -in Users/" + name + "#.txt -out Users/" + name + ".txt -pbkdf2 -k kriptografija -nosalt -base64";
+            CommandPrompt.ExecuteCommand(decryptCommand);
+
+            try
+            {
+                var path = USERS_PATH + "\\" + name + ".txt";
+                string[] lines = File.ReadAllLines(path);
+                File.Delete(path);
+
+                user = new User(lines[0], lines[1], lines[2], lines[3]);
+
+            }
+            catch (Exception e)
+            {
+                //TODO: Mozda bi trebalo dodati malo srecniji exception handling 
+                Console.WriteLine(e.StackTrace + " : " + e.Message);
+            }
+
+            return user;
         }
 
         #region
@@ -79,40 +103,6 @@ namespace EncryptedFileSystem.Controllers
                     exists = true;
 
             return exists;
-        }
-
-        public static User ReadUserInfo(string name)
-        {
-            string[] lines = null;
-            User user = null;
-
-            string decryptCommand = "openssl aria-256-ecb -d -in Users/" + name + "#.txt -out Users/" + name + ".txt -pbkdf2 -k kriptografija -nosalt -base64";
-            CommandPrompt.ExecuteCommand(decryptCommand);
-
-            try
-            {
-                var path = USERS_PATH + "\\" + name + ".txt";
-                lines = File.ReadAllLines(path);
-                File.Delete(path);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.StackTrace + " : " + e.Message);
-            }
-
-            if(lines != null)
-            {
-                try
-                {
-                    user = new User(lines[0], lines[1], lines[2], lines[3]);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.StackTrace + " : " + e.Message);
-                }
-            }
-
-            return user;
         }
 
         private static string Passwd(string password, string hashAlgorythm)

@@ -40,12 +40,6 @@ namespace EncryptedFileSystem.Utils
             };
 
             process.Start();
-            //StringBuilder sb = new StringBuilder();
-            //while (!process.HasExited)
-            //{
-            //    sb.Append(process.StandardOutput.ReadToEnd());
-            //}
-            
             process.WaitForExit();
             string result = process.StandardOutput.ReadToEnd();
 
