@@ -90,6 +90,18 @@ namespace EncryptedFileSystem.Controllers
             return user;
         }
 
+        public static List<string> GetUsers()
+        {
+            DirectoryInfo root = new DirectoryInfo(FS_PATH);
+            var homeDirs = root.GetDirectories();
+            List<string> users = new List<string>();
+
+            foreach (var home in homeDirs)
+                users.Add(home.Name);
+
+            return users;
+        }
+
         #region
 
         private static bool CheckNameExists(string name)

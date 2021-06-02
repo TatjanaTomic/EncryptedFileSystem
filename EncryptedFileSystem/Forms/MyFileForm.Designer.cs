@@ -1,7 +1,7 @@
 ﻿
 namespace EncryptedFileSystem.Forms
 {
-    partial class MyFile
+    partial class MyFileForm
     {
         /// <summary>
         /// Required designer variable.
@@ -29,7 +29,7 @@ namespace EncryptedFileSystem.Forms
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MyFile));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MyFileForm));
             this.tbText = new System.Windows.Forms.TextBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.tbName = new System.Windows.Forms.TextBox();
@@ -68,10 +68,10 @@ namespace EncryptedFileSystem.Forms
             // tbName
             // 
             this.tbName.BackColor = System.Drawing.Color.White;
-            this.tbName.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tbName.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tbName.Location = new System.Drawing.Point(12, 36);
             this.tbName.Name = "tbName";
-            this.tbName.Size = new System.Drawing.Size(287, 29);
+            this.tbName.Size = new System.Drawing.Size(760, 24);
             this.tbName.TabIndex = 1;
             this.tbName.TextChanged += new System.EventHandler(this.TbName_TextChanged);
             // 
@@ -102,7 +102,7 @@ namespace EncryptedFileSystem.Forms
             this.tbPath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tbPath.BackColor = System.Drawing.Color.White;
-            this.tbPath.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tbPath.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tbPath.Location = new System.Drawing.Point(12, 95);
             this.tbPath.Multiline = true;
             this.tbPath.Name = "tbPath";
@@ -132,7 +132,7 @@ namespace EncryptedFileSystem.Forms
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.BtnCancel_Click);
             // 
-            // MyFile
+            // MyFileForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -146,7 +146,7 @@ namespace EncryptedFileSystem.Forms
             this.Controls.Add(this.tbName);
             this.Controls.Add(this.panel1);
             this.MinimumSize = new System.Drawing.Size(500, 450);
-            this.Name = "MyFile";
+            this.Name = "MyFileForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "MyFile";
             this.panel1.ResumeLayout(false);

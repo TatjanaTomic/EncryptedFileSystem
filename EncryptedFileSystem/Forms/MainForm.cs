@@ -25,7 +25,10 @@ namespace EncryptedFileSystem.Forms
         {
             InitializeComponent();
             Text = username = currentUser;
+            cbAlgorythm.SelectedIndex = 0;
+
             LoadFiles();
+            LoadUsers();
         }
 
         private void LoadFiles()
@@ -37,7 +40,8 @@ namespace EncryptedFileSystem.Forms
             {
                 Name = FS_PATH + "\\" + username,
                 Text = username,
-                Tag = new DirectoryInfo(FS_PATH + "\\" + username)
+                Tag = new DirectoryInfo(FS_PATH + "\\" + username),
+                ImageIndex = 0
             };
             FileSystemView.Nodes.Add(root);
             AddChildren(root);
@@ -46,7 +50,8 @@ namespace EncryptedFileSystem.Forms
             {
                 Name = SHARED_PATH,
                 Text = "Shared",
-                Tag = new DirectoryInfo(SHARED_PATH)
+                Tag = new DirectoryInfo(SHARED_PATH),
+                ImageIndex = 0
             };
             SharedView.Nodes.Add(shared);
             AddChildren(shared);
@@ -68,7 +73,8 @@ namespace EncryptedFileSystem.Forms
                     {
                         Name = file.FullName,
                         Text = file.Name,
-                        Tag = file
+                        Tag = file,
+                        ImageIndex = GetIcon(file)
                     };
                     parent.Nodes.Add(child);
                 }
@@ -81,7 +87,8 @@ namespace EncryptedFileSystem.Forms
                 {
                     Name = directory.FullName,
                     Text = directory.Name,
-                    Tag = directory
+                    Tag = directory,
+                    ImageIndex = 0
                 };
                 parent.Nodes.Add(child);
 
@@ -165,7 +172,7 @@ namespace EncryptedFileSystem.Forms
 
         private void BtnNewFile_Click(object sender, EventArgs e)
         {
-            new MyFile(username, GetRelativePath(), string.Empty, string.Empty).ShowDialog();
+            new MyFileForm(username, GetRelativePath(), string.Empty, string.Empty).ShowDialog();
             LoadFiles();
         }
 
@@ -186,7 +193,7 @@ namespace EncryptedFileSystem.Forms
                     try
                     {
                         var content = FileSystemController.GetFileContent(username, selectedFile);
-                        var result = new MyFile(username, GetRelativePath(), selectedFile.Name, content).ShowDialog();
+                        var result = new MyFileForm(username, GetRelativePath(), selectedFile.Name, content).ShowDialog();
                         if(result.Equals(DialogResult.OK))
                             LoadFiles();
                     }
@@ -265,16 +272,8 @@ namespace EncryptedFileSystem.Forms
                     {
                         try
                         {
-                            if (selectedNode.Name.StartsWith(SHARED_PATH))
-                            {
-                                FileSystemController.DeleteFromShared();
-                                LoadFiles();
-                            }
-                            else
-                            {
-                                FileSystemController.DeleteFromFileSystem(selectedNode.Name, selectedNode.Tag);
-                                LoadFiles();
-                            }
+                            FileSystemController.DeleteFromFileSystem(selectedNode.Name, selectedNode.Tag);
+                            LoadFiles();            
                         }
                         catch (Exception ex)
                         {
@@ -305,6 +304,112 @@ namespace EncryptedFileSystem.Forms
                 catch (Exception ex)
                 {
                     MessageBox.Show("Došlo je do greške prilikom kreiranja direktorijuma!", "Greška", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Console.WriteLine(ex.StackTrace + " : " + ex.Message);
+                }
+            }
+        }
+
+        private void LoadUsers()
+        {
+            var users = UserController.GetUsers();
+            foreach (var user in users)
+                if (user != username)
+                    listBoxUsers.Items.Add(user);
+        }
+
+        private void BtnShareWith_Click(object sender, EventArgs e)
+        {
+            string password = tbPassword.Text.Trim();
+   
+            if (FileSystemView.SelectedNode == null || FileSystemView.SelectedNode.Tag.GetType() != typeof(FileInfo))
+            {
+                MessageBox.Show("Izaberite datoteku sa svog fajl sistema koju želite da podijelite!", string.Empty, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
+            else if (listBoxUsers.SelectedItem == null)
+            {
+                MessageBox.Show("Izaberite korisnika sa kojim želite da podijelite datoteku!", string.Empty, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
+            else if (string.IsNullOrEmpty(password))
+            {
+                MessageBox.Show("Unesite lozinku za kriptovanje!", string.Empty, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
+            else
+            {
+                FileInfo selectedFile = (FileInfo)FileSystemView.SelectedNode.Tag;
+                string receiver = listBoxUsers.SelectedItem.ToString();
+
+                try
+                {
+                    FileSystemController.ShareFile(username, receiver, selectedFile, cbAlgorythm.SelectedItem.ToString(), password);
+                    LoadFiles();
+                }
+                catch (EfsException ex)
+                {
+                    MessageBox.Show(ex.Message, string.Empty, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Došlo je do greške prilikom dijeljenja datoteke!", "Greška", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Console.WriteLine(ex.StackTrace + " : " + ex.Message);
+                }
+            }
+        }
+
+        private int GetIcon(FileInfo file)
+        {
+            int number = 4;
+
+            switch(file.Extension)
+            {
+                case ".pdf":
+                    number = 1;
+                    break;
+                case ".jpeg":
+                    number = 2;
+                    break;
+                case ".jpg":
+                    number = 2;
+                    break;
+                case ".png":
+                    number = 3;
+                    break;
+                case ".txt":
+                    number = 4;
+                    break;
+                case ".docx":
+                    number = 5;
+                    break;
+            }
+
+            return number;
+        }
+
+        private void SharedView_DoubleClick(object sender, EventArgs e)
+        {
+            if (SharedView.SelectedNode.Tag.GetType() == typeof(FileInfo))
+            {
+                try
+                {
+                    FileInfo selectedFile = (FileInfo)SharedView.SelectedNode.Tag;
+                    if (selectedFile.Name.StartsWith("message_"))
+                    {
+                        var content = FileSystemController.ReadMessage(selectedFile, username);
+                        new MyFileForm(username, SharedView.SelectedNode.FullPath, selectedFile.Name, content, true).ShowDialog();   
+                    }
+                    else
+                    {
+                        new 
+                        //TODO: Zavrsiti ovo
+                        //FileSystemController.OpenSharedFile((FileInfo)FileSystemView.SelectedNode.Tag, username);
+                    }
+                }
+                catch (EfsException ex)
+                {
+                    MessageBox.Show(ex.Message, string.Empty, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Došlo je do greške prilikom otvaranja datoteke!", "Greška", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     Console.WriteLine(ex.StackTrace + " : " + ex.Message);
                 }
             }

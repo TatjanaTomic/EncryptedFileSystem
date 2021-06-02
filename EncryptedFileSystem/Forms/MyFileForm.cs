@@ -13,25 +13,36 @@ using System.Windows.Forms;
 
 namespace EncryptedFileSystem.Forms
 {
-    public partial class MyFile : Form
+    public partial class MyFileForm : Form
     {
         private readonly string username;
         private readonly string currentPath;
         private readonly bool createNew = true;
 
-        public MyFile(string username, string path, string name, string content)
+        public MyFileForm(string username, string path, string name, string content, bool isMessage = false)
         {
             InitializeComponent();
-
             this.username = username;
             currentPath = path;
 
-            tbPath.Text = "\\" + path + "\\" + name;
-            if(!string.IsNullOrEmpty(name))
+            if (isMessage)
             {
                 tbName.Text = name;
                 tbName.ReadOnly = true;
-                createNew = false;
+                tbPath.Text = path;
+                tbText.ReadOnly = true;
+                btnCancel.Visible = false;
+                btnSave.Visible = false;
+            }
+            else
+            {
+                tbPath.Text = "\\" + path + "\\" + name;
+                if (!string.IsNullOrEmpty(name))
+                {
+                    tbName.Text = name;
+                    tbName.ReadOnly = true;
+                    createNew = false;
+                }
             }
             tbText.Text = content;
         }
