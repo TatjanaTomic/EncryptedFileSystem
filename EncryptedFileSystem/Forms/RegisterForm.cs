@@ -32,7 +32,7 @@ namespace EncryptedFileSystem.Forms
 
         private void BtnRegister_Click(object sender, EventArgs e)
         {
-            string username = tbUsername.Text = tbUsername.Text.Trim();
+            string username = tbUsername.Text = tbUsername.Text.Trim().Replace("_", "-").Replace("#", "-");
             string password = tbPassword.Text = tbPassword.Text.Trim();
             string repeatedPassword = tbRepeatedPassword.Text = tbRepeatedPassword.Text.Trim();
 

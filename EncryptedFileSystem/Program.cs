@@ -13,6 +13,7 @@ namespace EncryptedFileSystem
         private static readonly string USERS_PATH = Application.StartupPath + "\\" + "Users";
         private static readonly string SHARED_PATH = Application.StartupPath + "\\" + "Shared";
         private static readonly string CERTS_PATH = Application.StartupPath + "\\" + "Certificates";
+        private static readonly string TEMP_PATH = Application.StartupPath + "\\Temp";
 
         /// <summary>
         /// The main entry point for the application.
@@ -40,6 +41,11 @@ namespace EncryptedFileSystem
 
             if (!Directory.Exists(SHARED_PATH))
                 Directory.CreateDirectory(SHARED_PATH);
+
+            if (Directory.Exists(TEMP_PATH))
+                Directory.Delete(TEMP_PATH, true);
+            else
+                Directory.CreateDirectory(TEMP_PATH);
         }
     }
 }

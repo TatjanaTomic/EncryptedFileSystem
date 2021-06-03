@@ -74,7 +74,7 @@ namespace EncryptedFileSystem.Forms
                         Name = file.FullName,
                         Text = file.Name,
                         Tag = file,
-                        ImageIndex = GetIcon(file)
+                        ImageIndex = GetFileIcon(file)
                     };
                     parent.Nodes.Add(child);
                 }
@@ -355,7 +355,7 @@ namespace EncryptedFileSystem.Forms
             }
         }
 
-        private int GetIcon(FileInfo file)
+        private int GetFileIcon(FileInfo file)
         {
             int number = 4;
 
@@ -398,7 +398,11 @@ namespace EncryptedFileSystem.Forms
                     }
                     else
                     {
-                        new 
+                        if (!selectedFile.FullName.StartsWith(SHARED_PATH + "\\" + username))
+                            MessageBox.Show("Možete da otvorite samo svoje fajlove iz 'shared' foldera!", "", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                        else
+                            new DecryptFileForm(selectedFile.FullName, selectedFile.Name).ShowDialog();
+
                         //TODO: Zavrsiti ovo
                         //FileSystemController.OpenSharedFile((FileInfo)FileSystemView.SelectedNode.Tag, username);
                     }

@@ -65,7 +65,7 @@ namespace EncryptedFileSystem.Forms
             this.FileSystemView.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FileSystemView.ImageIndex = 0;
             this.FileSystemView.ImageList = this.imageList1;
-            this.FileSystemView.Location = new System.Drawing.Point(29, 47);
+            this.FileSystemView.Location = new System.Drawing.Point(25, 47);
             this.FileSystemView.Name = "FileSystemView";
             this.FileSystemView.SelectedImageIndex = 6;
             this.FileSystemView.Size = new System.Drawing.Size(405, 221);
@@ -153,7 +153,7 @@ namespace EncryptedFileSystem.Forms
             this.SharedView.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.SharedView.ImageIndex = 0;
             this.SharedView.ImageList = this.imageList1;
-            this.SharedView.Location = new System.Drawing.Point(29, 309);
+            this.SharedView.Location = new System.Drawing.Point(25, 309);
             this.SharedView.Name = "SharedView";
             this.SharedView.SelectedImageIndex = 6;
             this.SharedView.Size = new System.Drawing.Size(405, 215);
@@ -311,7 +311,7 @@ namespace EncryptedFileSystem.Forms
             this.label7.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label7.AutoSize = true;
             this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label7.Location = new System.Drawing.Point(474, 286);
+            this.label7.Location = new System.Drawing.Point(478, 286);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(143, 20);
             this.label7.TabIndex = 25;
@@ -322,7 +322,7 @@ namespace EncryptedFileSystem.Forms
             this.label9.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label9.AutoSize = true;
             this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label9.Location = new System.Drawing.Point(474, 24);
+            this.label9.Location = new System.Drawing.Point(478, 24);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(146, 20);
             this.label9.TabIndex = 26;

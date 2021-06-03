@@ -3,6 +3,7 @@ using EncryptedFileSystem.Model;
 using EncryptedFileSystem.Utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,6 +17,7 @@ namespace EncryptedFileSystem.Controllers
         private static readonly string CERTS_PATH = Application.StartupPath + "\\Certificates";
         private static readonly string FS_PATH = Application.StartupPath + "\\FileSystem";
         private static readonly string SHARED_PATH = Application.StartupPath + "\\Shared";
+        private static readonly string TEMP_PATH = Application.StartupPath + "\\Temp";
 
         public static void ShareFile(string senderName, string receiverName, FileInfo file, string algorythm, string password)
         {
@@ -48,8 +50,8 @@ namespace EncryptedFileSystem.Controllers
                         Directory.CreateDirectory(destinationPath);
 
                     File.Move(encryptedInfoFile.FullName, destinationPath + "\\" + encryptedInfoFile.Name.Remove(0, 3));
-                    File.Move(files[0].FullName, destinationPath + "\\" + files[0].Name.Remove(0, 3));
-                    File.Move(files[1].FullName, destinationPath + "\\" + files[1].Name.Remove(0, 3));
+                    File.Move(files[0].FullName, destinationPath + "\\" + senderName + "_" + files[0].Name.Remove(0, 3));
+                    File.Move(files[1].FullName, destinationPath + "\\" + senderName + "_" + files[1].Name.Remove(0, 3));
                 }
             }
         }
@@ -90,6 +92,35 @@ namespace EncryptedFileSystem.Controllers
             };
         }
 
+        public static void DecryptSharedFile(string path, string algorythm, string key)
+        {
+            FileInfo file = new FileInfo(path);
+            string decryptedFile = TEMP_PATH + "\\tmp_" + DateTime.Now.ToString().Replace(' ', '_').Replace(':', '-') + "_" + file.Name;
+            string commandDecryptFile = "openssl " + algorythm + " -d -in " + file.FullName + " -out " + decryptedFile + " -nosalt -k " + key + " -base64";
+            CommandPrompt.ExecuteCommand(commandDecryptFile);
+
+            string fileSignature = path.Insert(path.LastIndexOf('.'), "#");
+            string decryptedSignature = TEMP_PATH + "\\tmp_" + DateTime.Now.ToString().Replace(' ', '_').Replace(':', '-') + "_" + file.Name.Insert(file.Name.LastIndexOf('.'), "#");
+            string commandDecryptSignature = "openssl " + algorythm + " -d -in " + fileSignature + " -out " + decryptedSignature + " -nosalt -k " + key + " -base64";
+            CommandPrompt.ExecuteCommand(commandDecryptSignature);
+
+            string senderName = file.Name.Substring(0, file.Name.IndexOf('_'));
+            string senderHashAlg = GetHashAlgorythm(UserController.ReadUserInfo(senderName).HashAlgorythm);
+            string senderPublicKey = CERTS_PATH + "\\public\\" + senderName + "_public.key";
+            string commandVerify = "openssl dgst " + senderHashAlg + " -verify " + senderPublicKey + " -signature " + decryptedSignature + " " + decryptedFile;
+            var result = CommandPrompt.ExecuteCommandWithResponse(commandVerify).Trim();
+
+            if (!result.Equals("Verified OK"))
+            {
+                throw new EfsException("Ne može se dekriptovati fajl!");
+            }
+            else
+            {
+                Process.Start(decryptedFile);
+            }
+
+        }
+
         public static void OpenFile(FileInfo selectedFile, string username)
         {
             if(selectedFile.Exists)
@@ -111,7 +142,7 @@ namespace EncryptedFileSystem.Controllers
             if (infoFile.Exists)
             {
                 string privateKey = CERTS_PATH + "\\private\\" + username + "_private.key";
-                string tmpPath = FS_PATH + "\\tmp.txt";
+                string tmpPath = TEMP_PATH + "\\tmp.txt";
                 string command = "openssl rsautl -decrypt -in " + infoFile.FullName + " -out " + tmpPath + " -inkey " + privateKey;
                 CommandPrompt.ExecuteCommand(command);
                 
