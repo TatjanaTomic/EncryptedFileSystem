@@ -44,8 +44,7 @@ namespace EncryptedFileSystem
 
             if (Directory.Exists(TEMP_PATH))
                 Directory.Delete(TEMP_PATH, true);
-            else
-                Directory.CreateDirectory(TEMP_PATH);
+            Directory.CreateDirectory(TEMP_PATH);
         }
     }
 }

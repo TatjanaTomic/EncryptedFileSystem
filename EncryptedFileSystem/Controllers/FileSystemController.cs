@@ -19,6 +19,281 @@ namespace EncryptedFileSystem.Controllers
         private static readonly string SHARED_PATH = Application.StartupPath + "\\Shared";
         private static readonly string TEMP_PATH = Application.StartupPath + "\\Temp";
 
+        #region MyFiles
+
+        public static void MakeDirectory(string relativePath, string name)
+        {
+            string absolutePath = FS_PATH + "\\" + relativePath + "\\" + name;
+
+            if (Directory.Exists(absolutePath))
+                throw new EfsException("Već postoji direktorijum sa unesenim nazivom na izabranoj putanji!");
+            else
+                Directory.CreateDirectory(absolutePath);
+        }
+
+        public static void OpenFile(FileInfo selectedFile, string username)
+        {
+            User user = UserController.ReadUserInfo(username);
+            if (selectedFile.Exists)
+            {
+                //pronađe se digitalni potpis izabrane datoteke
+                FileInfo fileSignature = new FileInfo(selectedFile.FullName.Insert(selectedFile.FullName.LastIndexOf('.'), "#"));
+
+                //svi fajlovi na fajl sistemu se čuvaju kriptovani pa je potrebno prvo ih dekriptovati
+                var decryptedFile = DecryptFile(selectedFile, user.EncAlgorythm);
+                var decryptedSignature = DecryptFile(fileSignature, user.EncAlgorythm);
+
+                //provjeri se digitalni potpis
+                if (!Verify(username, user.HashAlgorythm, decryptedFile, decryptedSignature))
+                    throw new EfsException("Datoteka " + selectedFile.Name + " ne može da se otvori jer je narušen njen integritet!");
+                else
+                {
+                    //preimenuje se dekriptovani fajl u naziv originalnog fajla zbog prikaza u odgovarajućem programu
+                    decryptedFile.MoveTo(decryptedFile.DirectoryName + "\\" + selectedFile.Name);
+                    //pokreće se proces koji otvara datoteku u podrazumijevanom programu
+                    Process.Start(decryptedFile.FullName).WaitForExit();
+                }
+
+                //brišu se dekriptovani fajlovi
+                decryptedFile.Delete();
+                decryptedSignature.Delete();
+            }
+        }
+
+        public static void CreateNewFile(string username, string relativePath, string fileName, string content)
+        {
+            fileName = fileName.Replace(" ", "_").Replace("#", "-");
+            if (!fileName.EndsWith(".txt"))
+                fileName += ".txt";
+            string absolutePath = FS_PATH + "\\" + relativePath + "\\" + fileName;
+
+            if (File.Exists(absolutePath))
+            {
+                throw new EfsException("Na izabranoj putanji postoji fajl sa unesenim nazivom. Unesite novi naziv.");
+            }
+            else
+            {
+                User user = UserController.ReadUserInfo(username);
+
+                //kreira se datoteka na privremenoj putanji i u nju se upiše tekst
+                string tmpPath = TEMP_PATH + "\\" + fileName;
+                File.WriteAllText(tmpPath, content);
+                //digitalno se potpiše taj dokument i sačuva na istoj putanji
+                var fileSignature = Digest(user.Name, user.HashAlgorythm, new FileInfo(tmpPath));
+
+                //kriptuju se originalni fajl i digitalno potpisan korisnikovim simetričnim algoritmom
+                var fileEnc = EncryptFile(new FileInfo(tmpPath), user.EncAlgorythm);
+                var signatureEnc = EncryptFile(fileSignature, user.EncAlgorythm);
+
+                //preimenuju se originalni fajl i digitalno potpisani da se izbaci "###" iz naziva
+                fileEnc.MoveTo(absolutePath);
+                signatureEnc.MoveTo(absolutePath.Insert(absolutePath.LastIndexOf("."), "#"));
+
+                //brišu se nekriptovani fajlovi sa privremene putanje
+                File.Delete(tmpPath);
+                fileSignature.Delete();
+            }
+        }
+
+        public static string GetFileContent(string username, FileInfo file)
+        {
+            string content;
+
+            if (!file.Exists)
+                throw new EfsException("Došlo je do greške prilikom otvaranja datoteke.");
+            else
+            {
+                User user = UserController.ReadUserInfo(username);
+                FileInfo fileSignature = new FileInfo(file.FullName.Insert(file.FullName.LastIndexOf('.'), "#"));
+
+                var decryptedFile = DecryptFile(file, user.EncAlgorythm);
+                var decryptedSignature = DecryptFile(fileSignature, user.EncAlgorythm);
+
+                if (!Verify(user.Name, user.HashAlgorythm, decryptedFile, decryptedSignature))
+                    throw new EfsException("Ne može se urediti datoteka " + file.Name + " jer je narušen njen integritet!");
+                else
+                    content = File.ReadAllText(decryptedFile.FullName);
+
+                decryptedFile.Delete();
+                decryptedSignature.Delete();
+            }
+            return content;
+        }
+
+        public static void EditFile(string username, string relativePath, string fileName, string content)
+        {
+            string absolutePath = FS_PATH + "\\" + relativePath + "\\" + fileName;
+            FileInfo selectedFile = new FileInfo(absolutePath);
+            FileInfo fileSignature = new FileInfo(absolutePath.Insert(absolutePath.LastIndexOf('.'), "#"));
+
+            User user = UserController.ReadUserInfo(username);
+
+            var decryptedFile = DecryptFile(selectedFile, user.EncAlgorythm);
+            var decryptedSignature = DecryptFile(fileSignature, user.EncAlgorythm);
+
+            File.WriteAllText(decryptedFile.FullName, content);
+            var newSignature = Digest(user.Name, user.HashAlgorythm, decryptedFile);
+
+            var fileEnc = EncryptFile(decryptedFile, user.EncAlgorythm);
+            var newSignatureEnc = EncryptFile(newSignature, user.EncAlgorythm);
+
+            selectedFile.Delete();
+            fileSignature.Delete();
+            decryptedFile.Delete();
+            decryptedSignature.Delete();
+
+            fileEnc.MoveTo(absolutePath);
+            newSignatureEnc.MoveTo(absolutePath.Insert(absolutePath.LastIndexOf('.'), "#"));
+        }
+
+        public static void DeleteFromFileSystem(string path, Object o)
+        {
+            if (o.GetType() == typeof(FileInfo))
+            {
+                if (File.Exists(path))
+                    File.Delete(path);
+
+                string signature = path.Insert(path.LastIndexOf('.'), "#");
+                if (File.Exists(signature))
+                    File.Delete(signature);
+            }
+            else
+                Directory.Delete(path, true);
+        }
+
+        public static void Upload(string username, string hostPath, string efsPath)
+        {
+            if (!File.Exists(hostPath))
+                throw new EfsException("Došlo je do greške prilikom upload-a. Izaberite drugu datoteku.");
+            else
+            {
+                User user = UserController.ReadUserInfo(username);
+                FileInfo selectedFile = new FileInfo(hostPath);
+
+                if (!CheckExtension(selectedFile))
+                    throw new EfsException("Tip datoteke nije podržan!");
+                else
+                {
+                    string newPath = efsPath + "\\" + selectedFile.Name.Replace(' ', '_').Replace('#', '_');
+                    if (File.Exists(newPath))
+                        throw new EfsException("Na izabranoj putanji postoji datoteka sa istim nazivom!");
+                    else
+                    {
+                        string tmpPath = TEMP_PATH + "\\" + selectedFile.Name.Replace(' ', '_').Replace('#', '_');
+
+                        File.Copy(hostPath, tmpPath);
+                        FileInfo newFile = new FileInfo(tmpPath);
+                        var fileSignature = Digest(user.Name, user.HashAlgorythm, newFile);
+
+                        var newFileEnc = EncryptFile(newFile, user.EncAlgorythm);
+                        var fileSignatureEnc = EncryptFile(fileSignature, user.EncAlgorythm);
+
+                        newFileEnc.MoveTo(newPath);
+                        fileSignatureEnc.MoveTo(newPath.Insert(newPath.LastIndexOf('.'), "#"));
+
+                        newFile.Delete();
+                        fileSignature.Delete();
+                    }
+                }
+            }
+        }
+
+        public static string DownloadFile(FileInfo selectedFile, string username)
+        {
+            User user = UserController.ReadUserInfo(username);
+            string hostPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\" + selectedFile.Name;
+
+            FileInfo fileSignature = new FileInfo(selectedFile.FullName.Insert(selectedFile.FullName.LastIndexOf('.'), "#"));
+
+            var decryptedFile = DecryptFile(selectedFile, user.EncAlgorythm);
+            var decryptedSignature = DecryptFile(fileSignature, user.EncAlgorythm);
+
+            if (!Verify(username, user.HashAlgorythm, decryptedFile, decryptedSignature))
+            {
+                throw new EfsException("Datoteka " + selectedFile.Name + " ne može da se preuzme jer je narušen njen integritet!");
+            }
+            else
+            {
+                File.Copy(decryptedFile.FullName, hostPath);
+            }
+
+            decryptedFile.Delete();
+            decryptedSignature.Delete();
+
+            return hostPath;
+        }
+
+        #endregion MyFiles
+
+        #region HelpMethods
+
+        private static FileInfo EncryptFile(FileInfo file, string algorythm, string key = "criptography")
+        {
+            string encrypthedFile = file.FullName.Insert(file.FullName.LastIndexOf("\\") + 1, "###");
+            string command = "openssl " + algorythm + " -in " + file.FullName + " -out " + encrypthedFile + " -nosalt -k " + key + " -base64";
+            CommandPrompt.ExecuteCommand(command);
+            return new FileInfo(encrypthedFile);
+        }
+
+        private static FileInfo DecryptFile(FileInfo file, string algorythm, string key = "criptography")
+        {
+            string decryptedFile = TEMP_PATH + "\\tmp_" + DateTime.Now.ToString().Replace(' ', '_').Replace(':', '-') + "_" + file.Name;
+            string command = "openssl " + algorythm + " -d -in " + file.FullName + " -out " + decryptedFile + " -nosalt -k " + key + " -base64";
+            CommandPrompt.ExecuteCommand(command);
+            return new FileInfo(decryptedFile);
+
+        }
+
+        private static bool Verify(string username, string hashAlgorythm, FileInfo file, FileInfo signature)
+        {
+            hashAlgorythm = GetHashAlgorythm(hashAlgorythm);
+            string publicKey = CERTS_PATH + "\\public\\" + username + "_public.key";
+
+            string command = "openssl dgst " + hashAlgorythm + " -verify " + publicKey + " -signature " + signature + " " + file.FullName;
+            var result = CommandPrompt.ExecuteCommandWithResponse(command);
+
+            return result.Trim().Equals("Verified OK");
+        }
+
+        private static bool CheckExtension(FileInfo file)
+        {
+            var extension = file.Extension;
+
+            return (extension.Equals(".txt") || extension.Equals(".pdf") || extension.Equals(".docx") || extension.Equals(".png") || extension.Equals(".jpg") || extension.Equals(".jpeg"));
+        }
+
+        private static FileInfo Digest(string username, string hashAlgorythm, FileInfo inFile)
+        {
+            hashAlgorythm = GetHashAlgorythm(hashAlgorythm);
+            string privateKey = CERTS_PATH + "\\private\\" + username + "_private.key";
+            string outFile = inFile.FullName.Insert(inFile.FullName.LastIndexOf('.'), "#");
+
+            string command = "openssl dgst " + hashAlgorythm + " -sign " + privateKey + " -out " + outFile + " " + inFile;
+            CommandPrompt.ExecuteCommand(command);
+            return new FileInfo(outFile);
+        }
+
+        private static string GetHashAlgorythm(string hashAlgorythm)
+        {
+            switch (hashAlgorythm)
+            {
+                case "1":
+                    hashAlgorythm = "-md5";
+                    break;
+                case "5":
+                    hashAlgorythm = "-sha256";
+                    break;
+                case "6":
+                    hashAlgorythm = "-sha512";
+                    break;
+            }
+
+            return hashAlgorythm;
+        }
+
+        #endregion HelpMethods
+
+
         public static void ShareFile(string senderName, string receiverName, FileInfo file, string algorythm, string password)
         {
             if (!file.Exists)
@@ -27,7 +302,8 @@ namespace EncryptedFileSystem.Controllers
             {
                 User sender = UserController.ReadUserInfo(senderName);
 
-                if (!Verify(sender.Name, sender.HashAlgorythm, file))
+                FileInfo fileSignature = new FileInfo(file.FullName.Insert(file.FullName.LastIndexOf('.'), "#"));
+                if (!Verify(sender.Name, sender.HashAlgorythm, file, fileSignature)) 
                     throw new EfsException("Ne možete podijeliti datoteku jer je njen integritet narušen!");
                 else
                 {
@@ -35,6 +311,7 @@ namespace EncryptedFileSystem.Controllers
 
 
                     //prvo se kriptuju originalni fajl i digitalno potpisan originalni fajl
+                    
                     var files = EncryptForSharing(file, algorythm, password);
 
                     //zatim u fajl sa nazivom 'posiljalac_datum_vrijemeSlanja' upisuju se redom:
@@ -105,35 +382,18 @@ namespace EncryptedFileSystem.Controllers
             CommandPrompt.ExecuteCommand(commandDecryptSignature);
 
             string senderName = file.Name.Substring(0, file.Name.IndexOf('_'));
-            string senderHashAlg = GetHashAlgorythm(UserController.ReadUserInfo(senderName).HashAlgorythm);
-            string senderPublicKey = CERTS_PATH + "\\public\\" + senderName + "_public.key";
-            string commandVerify = "openssl dgst " + senderHashAlg + " -verify " + senderPublicKey + " -signature " + decryptedSignature + " " + decryptedFile;
-            var result = CommandPrompt.ExecuteCommandWithResponse(commandVerify).Trim();
-
-            if (!result.Equals("Verified OK"))
+            string senderHashAlg = UserController.ReadUserInfo(senderName).HashAlgorythm;
+            if(!Verify(senderName, senderHashAlg, new FileInfo(decryptedFile), new FileInfo(decryptedSignature)))
             {
                 throw new EfsException("Ne može se dekriptovati fajl!");
             }
             else
             {
-                Process.Start(decryptedFile);
+                Process.Start(decryptedFile).WaitForExit();
             }
 
-        }
-
-        public static void OpenFile(FileInfo selectedFile, string username)
-        {
-            if(selectedFile.Exists)
-            {
-                User user = UserController.ReadUserInfo(username);
-
-                if (!Verify(username, user.HashAlgorythm, selectedFile))
-                    throw new EfsException("Datoteka " + selectedFile.Name + " ne može da se otvori jer je narušen njen integritet!");
-                else
-                {
-                    System.Diagnostics.Process.Start(selectedFile.FullName);
-                }
-            }
+            File.Delete(decryptedSignature);
+            File.Delete(decryptedFile);
         }
 
         public static string ReadMessage(FileInfo infoFile, string username)
@@ -156,168 +416,5 @@ namespace EncryptedFileSystem.Controllers
             return content;
         }
 
-        public static void CreateNewFile(string username, string relativePath, string fileName, string content)
-        {
-            if (!fileName.EndsWith(".txt"))
-                fileName += ".txt";
-            string absolutePath = FS_PATH + "\\" + relativePath + "\\" + fileName;
-
-            if (File.Exists(absolutePath))
-            {
-                throw new EfsException("Na izabranoj putanji postoji fajl sa unesenim nazivom. Unesite novi naziv.");
-            }
-            else
-            {
-                User user = UserController.ReadUserInfo(username);
-                File.WriteAllText(absolutePath, content);
-
-                Digest(user.Name, user.HashAlgorythm, absolutePath);
-            }
-        }
-
-        public static void EditFile(string username, string relativePath, string fileName, string content)
-        {
-            string absolutePath = FS_PATH + "\\" + relativePath + "\\" + fileName;
-
-            User user = UserController.ReadUserInfo(username);
-            File.WriteAllText(absolutePath, content);
-
-            Digest(user.Name, user.HashAlgorythm, absolutePath);
-        }
-
-        public static string GetFileContent(string username, FileInfo file)
-        {
-            User user = UserController.ReadUserInfo(username);
-            string content;
-
-            if (!file.Exists)
-                throw new EfsException("Došlo je do greške prilikom otvaranja datoteke.");
-            else if(!Verify(user.Name, user.HashAlgorythm, file))
-            {
-                throw new EfsException("Ne može se urediti datoteka " + file.Name + " jer je narušen njen integritet!");
-            }
-            else
-            {
-                content = File.ReadAllText(file.FullName);   
-            }
-
-            return content;
-        }
-
-
-        public static string DownloadFile(FileInfo selectedFile, string username)
-        {
-            //TODO: Nedovršeno
-            User user = UserController.ReadUserInfo(username);
-            string hostPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\" + selectedFile.Name;
-
-            if (!Verify(username, user.HashAlgorythm, selectedFile))
-                throw new EfsException("Datoteka " + selectedFile.Name + " ne može da se preuzme jer je narušen njen integritet!");
-            else
-            {
-                File.Copy(selectedFile.FullName, hostPath);
-            }
-
-            return hostPath;
-        }
-
-        public static void MakeDirectory(string username, string relativePath, string name)
-        {
-            string absolutePath = FS_PATH + "\\" + relativePath + "\\" + name;
-
-            if (Directory.Exists(absolutePath))
-                throw new EfsException("Već postoji direktorijum sa unesenim nazivom na izabranoj putanji!");
-            else
-                Directory.CreateDirectory(absolutePath);
-        }
-
-        private static bool Verify(string username, string hashAlgorythm, FileInfo file)
-        {
-            hashAlgorythm = GetHashAlgorythm(hashAlgorythm);
-            string publicKey = CERTS_PATH + "\\public\\" + username + "_public.key";
-            string signature = file.FullName.Insert(file.FullName.LastIndexOf('.'), "#");
-
-            string command = "openssl dgst " + hashAlgorythm + " -verify " + publicKey + " -signature " + signature + " " + file.FullName;
-            var result = CommandPrompt.ExecuteCommandWithResponse(command);
-
-            return result.Trim().Equals("Verified OK");
-        }
-
-        public static void Upload(string username, string hostPath, string efsPath)
-        {
-            if (!File.Exists(hostPath))
-                throw new EfsException("Došlo je do greške prilikom upload-a. Izaberite drugu datoteku.");
-            else
-            {
-                User user = UserController.ReadUserInfo(username);
-                FileInfo selectedFile = new FileInfo(hostPath);
-
-                if (!CheckExtension(selectedFile))
-                    throw new EfsException("Tip datoteke nije podržan!");
-                else
-                {
-                    string newPath = efsPath + "\\" + selectedFile.Name.Replace(' ', '_').Replace('#', '_');
-                    if (File.Exists(newPath))
-                        throw new EfsException("Na izabranoj putanji postoji datoteka sa istim nazivom!");
-                    else
-                    {
-                        File.Copy(hostPath, newPath);
-
-                        Digest(user.Name, user.HashAlgorythm, newPath);
-                    }
-                    //TODO: Provjeri da li još šta ovdje treba
-                }
-            }                
-        }
-
-        public static void DeleteFromFileSystem(string path, Object o)
-        {
-            if (o.GetType() == typeof(FileInfo))
-            {
-                if(File.Exists(path))
-                    File.Delete(path);
-                
-                string signature = path.Insert(path.LastIndexOf('.'), "#");
-                if(File.Exists(signature))
-                    File.Delete(signature);
-            }
-            else
-                Directory.Delete(path, true);
-        }
-
-        private static bool CheckExtension(FileInfo file)
-        {
-            var extension = file.Extension;
-
-            return (extension.Equals(".txt") || extension.Equals(".pdf") || extension.Equals(".docx") || extension.Equals(".png") || extension.Equals(".jpg") || extension.Equals(".jpeg"));
-        }
-
-        private static void Digest(string username, string hashAlgorythm, string inFile)
-        {
-            hashAlgorythm = GetHashAlgorythm(hashAlgorythm);
-            string privateKey = CERTS_PATH + "\\private\\" + username + "_private.key";
-            string outFile = inFile.Insert(inFile.LastIndexOf('.'), "#");
-
-            string command = "openssl dgst " + hashAlgorythm + " -sign " + privateKey + " -out " + outFile + " " + inFile;
-            CommandPrompt.ExecuteCommand(command);
-        }
-
-        private static string GetHashAlgorythm(string hashAlgorythm)
-        {
-            switch (hashAlgorythm)
-            {
-                case "1":
-                    hashAlgorythm = "-md5";
-                    break;
-                case "5":
-                    hashAlgorythm = "-sha256";
-                    break;
-                case "6":
-                    hashAlgorythm = "-sha512";
-                    break;
-            }
-
-            return hashAlgorythm;
-        }
     }
 }

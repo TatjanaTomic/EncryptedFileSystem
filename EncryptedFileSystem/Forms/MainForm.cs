@@ -294,7 +294,7 @@ namespace EncryptedFileSystem.Forms
             {
                 try
                 {
-                    FileSystemController.MakeDirectory(username, GetRelativePath(), name.Replace(' ', '_'));
+                    FileSystemController.MakeDirectory(GetRelativePath(), name.Replace(' ', '_'));
                     LoadFiles();
                 }
                 catch (EfsException ex)
