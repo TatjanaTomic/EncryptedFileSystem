@@ -225,6 +225,99 @@ namespace EncryptedFileSystem.Controllers
 
         #endregion MyFiles
 
+
+        #region SharedFiles
+
+        public static void ShareFile(string senderName, string receiverName, FileInfo file, string algorythm, string password)
+        {
+            if (!file.Exists)
+                throw new EfsException("Greška prilikom otvaranja fajla!");
+            else
+            {
+                User sender = UserController.ReadUserInfo(senderName);
+
+                FileInfo fileSignature = new FileInfo(file.FullName.Insert(file.FullName.LastIndexOf('.'), "#"));
+
+                //dekriptuju se fajl i digitalno potpisan fajl kako bi se mogli dalje koristiti
+                var decryptedFile = DecryptFile(file, sender.EncAlgorythm);
+                var decryptedSignature = DecryptFile(fileSignature, sender.EncAlgorythm);
+
+                if (!Verify(sender.Name, sender.HashAlgorythm, decryptedFile, decryptedSignature))
+                    throw new EfsException("Ne možete podijeliti datoteku jer je njen integritet narušen!");
+                else
+                {
+                    //kriptuju se originalni fajl i digitalno potpisan originalni fajl
+                    //algoritmom i lozinkom koju je korisnik unio prilikom dijeljenja fajla
+                    var fileEnc = EncryptFile(decryptedFile, algorythm, password);
+                    var signatureEnc = EncryptFile(decryptedSignature, algorythm, password);
+
+                    //zatim u fajl sa nazivom 'message_posiljalac_datum_vrijemeSlanja' upisuju se redom:
+                    //naziv poslanog fajla, simetricni algoritam kojim je originalni fajl kriptovan i kljuc za enkripciju
+                    //taj fajl se kriptuje javnim kljucem primaoca tako da ce ga samo primalac moci dekriptovati
+                    string[] content = { file.Name, algorythm, password };
+                    var encryptedInfoFile = EncryptInfoFile(senderName, receiverName, content);
+
+                    //prethodni rezultati se smjestaju u shared folder, u folder sa nazivom primaoca
+                    string destinationPath = SHARED_PATH + "\\" + receiverName;
+                    if (!Directory.Exists(destinationPath))
+                        Directory.CreateDirectory(destinationPath);
+
+                    encryptedInfoFile.MoveTo(destinationPath + "\\" + encryptedInfoFile.Name.Remove(0, 3));
+                    fileEnc.MoveTo(destinationPath + "\\" + senderName + "_" + file.Name);
+                    signatureEnc.MoveTo(destinationPath + "\\" + senderName + "_" + file.Name.Insert(file.Name.LastIndexOf('.'), "#"));
+
+                    decryptedFile.Delete();
+                    decryptedSignature.Delete();
+                }
+            }
+        }
+
+        public static void DecryptSharedFile(string path, string algorythm, string key)
+        {
+            FileInfo file = new FileInfo(path);
+            FileInfo fileSignature = new FileInfo(path.Insert(path.LastIndexOf("."), "#"));
+
+            var decryptedFile = DecryptFile(file, algorythm, key);
+            var decryptedSignature = DecryptFile(fileSignature, algorythm, key);
+
+            string senderName = file.Name.Substring(0, file.Name.IndexOf('_'));
+            string senderHashAlg = UserController.ReadUserInfo(senderName).HashAlgorythm;
+            if (!Verify(senderName, senderHashAlg, decryptedFile, decryptedSignature))
+            {
+                throw new EfsException("Ne može se dekriptovati fajl!");
+            }
+            else
+            {
+                decryptedFile.MoveTo(decryptedFile.DirectoryName + "\\" + file.Name);
+                Process.Start(decryptedFile.FullName).WaitForExit();
+            }
+
+            decryptedSignature.Delete();
+            decryptedFile.Delete();
+        }
+
+        public static string ReadMessage(FileInfo infoFile, string username)
+        {
+            string content = null;
+            if (infoFile.Exists)
+            {
+                string privateKey = CERTS_PATH + "\\private\\" + username + "_private.key";
+                string tmpPath = TEMP_PATH + "\\tmp_" + DateTime.Now.ToString().Replace(' ', '_').Replace(':', '-') + ".txt";
+                string command = "openssl rsautl -decrypt -in " + infoFile.FullName + " -out " + tmpPath + " -inkey " + privateKey;
+                CommandPrompt.ExecuteCommand(command);
+
+                content = File.ReadAllText(tmpPath);
+                if (string.IsNullOrEmpty(content))
+                    throw new EfsException("Nemate dozvolu za ovu operaciju!");
+
+                File.Delete(tmpPath);
+            }
+
+            return content;
+        }
+
+        #endregion SharedFiles
+
         #region HelpMethods
 
         private static FileInfo EncryptFile(FileInfo file, string algorythm, string key = "criptography")
@@ -242,6 +335,22 @@ namespace EncryptedFileSystem.Controllers
             CommandPrompt.ExecuteCommand(command);
             return new FileInfo(decryptedFile);
 
+        }
+
+        private static FileInfo EncryptInfoFile(string sender, string receiver, string[] content)
+        {
+            string infoFile = TEMP_PATH + "\\message_" + sender + "_" + DateTime.Now.ToString().Replace(' ', '_').Replace(':', '-') + ".txt";
+            File.WriteAllLines(infoFile, content);
+
+            string outInfoFile = infoFile.Insert(infoFile.LastIndexOf("\\") + 1, "###");
+            string publicKey = CERTS_PATH + "\\public\\" + receiver + "_public.key";
+
+            string command = "openssl rsautl -encrypt -in " + infoFile + " -out " + outInfoFile + " -inkey " + publicKey + " -pubin";
+            CommandPrompt.ExecuteCommand(command);
+
+            File.Delete(infoFile);
+
+            return new FileInfo(outInfoFile);
         }
 
         private static bool Verify(string username, string hashAlgorythm, FileInfo file, FileInfo signature)
@@ -292,129 +401,6 @@ namespace EncryptedFileSystem.Controllers
         }
 
         #endregion HelpMethods
-
-
-        public static void ShareFile(string senderName, string receiverName, FileInfo file, string algorythm, string password)
-        {
-            if (!file.Exists)
-                throw new EfsException("Greška prilikom otvaranja fajla!");
-            else
-            {
-                User sender = UserController.ReadUserInfo(senderName);
-
-                FileInfo fileSignature = new FileInfo(file.FullName.Insert(file.FullName.LastIndexOf('.'), "#"));
-                if (!Verify(sender.Name, sender.HashAlgorythm, file, fileSignature)) 
-                    throw new EfsException("Ne možete podijeliti datoteku jer je njen integritet narušen!");
-                else
-                {
-                    //TODO: posto na mom fajl sistemu sve treba biti kriptovano mojim simetricnim algoritmom, PRVO-PRVO trebam dekriptovati svoje fajlove
-
-
-                    //prvo se kriptuju originalni fajl i digitalno potpisan originalni fajl
-                    
-                    var files = EncryptForSharing(file, algorythm, password);
-
-                    //zatim u fajl sa nazivom 'posiljalac_datum_vrijemeSlanja' upisuju se redom:
-                    //naziv poslanog fajla, simetricni algoritam kojim je originalni fajl kriptovan i kljuc za enkripciju
-                    //taj fajl se kriptuje javnim kljucem primaoca tako da ce ga samo primalac moci dekriptovati
-                    string sourcePath = file.FullName.Substring(0, file.FullName.LastIndexOf("\\") + 1);
-                    string[] content = { file.Name, algorythm, password };
-                    var encryptedInfoFile = EncryptInfoFile(sourcePath, senderName, receiverName, content);
-
-                    //prethodni rezultati se smjestaju u shared folder, u folder sa nazivom primaoca
-                    string destinationPath = SHARED_PATH + "\\" + receiverName;
-                    if (!Directory.Exists(destinationPath))
-                        Directory.CreateDirectory(destinationPath);
-
-                    File.Move(encryptedInfoFile.FullName, destinationPath + "\\" + encryptedInfoFile.Name.Remove(0, 3));
-                    File.Move(files[0].FullName, destinationPath + "\\" + senderName + "_" + files[0].Name.Remove(0, 3));
-                    File.Move(files[1].FullName, destinationPath + "\\" + senderName + "_" + files[1].Name.Remove(0, 3));
-                }
-            }
-        }
-
-        private static FileInfo EncryptInfoFile(string sourcePath, string sender, string receiver, string[] content)
-        {
-            string infoFile = sourcePath + "message_" + sender + "_" + DateTime.Now.ToString().Replace(' ', '_').Replace(':', '-') + ".txt";
-            File.WriteAllLines(infoFile, content);
-
-            string outInfoFile = infoFile.Insert(infoFile.LastIndexOf("\\") + 1, "###");
-            string publicKey = CERTS_PATH + "\\public\\" + receiver + "_public.key";
-
-            string command = "openssl rsautl -encrypt -in " + infoFile + " -out " + outInfoFile + " -inkey " + publicKey + " -pubin";
-            CommandPrompt.ExecuteCommand(command);
-
-            File.Delete(infoFile);
-
-            return new FileInfo(outInfoFile);
-        }
-
-        private static List<FileInfo> EncryptForSharing(FileInfo file, string algorythm, string key)
-        {
-            string outFile = file.FullName.Insert(file.FullName.LastIndexOf("\\") + 1, "###");
-            string command = "openssl " + algorythm + " -in " + file.FullName + " -out " + outFile + " -nosalt -k " + key + " -base64";
-            CommandPrompt.ExecuteCommand(command);
-            FileInfo output1 = new FileInfo(outFile);
-
-            string inFile2 = file.FullName.Insert(file.FullName.LastIndexOf('.'), "#"); //ovo je digitalni potpis izabranog fajla, trebam i njega proslijediti
-            string outFile2 = inFile2.Insert(inFile2.LastIndexOf("\\") + 1, "###");
-            string command2 = "openssl " + algorythm + " -in " + inFile2 + " -out " + outFile2 + " -nosalt -k " + key + " -base64";
-            CommandPrompt.ExecuteCommand(command2);
-            FileInfo output2= new FileInfo(outFile2);
-
-            return new List<FileInfo>
-            {
-                output1,
-                output2
-            };
-        }
-
-        public static void DecryptSharedFile(string path, string algorythm, string key)
-        {
-            FileInfo file = new FileInfo(path);
-            string decryptedFile = TEMP_PATH + "\\tmp_" + DateTime.Now.ToString().Replace(' ', '_').Replace(':', '-') + "_" + file.Name;
-            string commandDecryptFile = "openssl " + algorythm + " -d -in " + file.FullName + " -out " + decryptedFile + " -nosalt -k " + key + " -base64";
-            CommandPrompt.ExecuteCommand(commandDecryptFile);
-
-            string fileSignature = path.Insert(path.LastIndexOf('.'), "#");
-            string decryptedSignature = TEMP_PATH + "\\tmp_" + DateTime.Now.ToString().Replace(' ', '_').Replace(':', '-') + "_" + file.Name.Insert(file.Name.LastIndexOf('.'), "#");
-            string commandDecryptSignature = "openssl " + algorythm + " -d -in " + fileSignature + " -out " + decryptedSignature + " -nosalt -k " + key + " -base64";
-            CommandPrompt.ExecuteCommand(commandDecryptSignature);
-
-            string senderName = file.Name.Substring(0, file.Name.IndexOf('_'));
-            string senderHashAlg = UserController.ReadUserInfo(senderName).HashAlgorythm;
-            if(!Verify(senderName, senderHashAlg, new FileInfo(decryptedFile), new FileInfo(decryptedSignature)))
-            {
-                throw new EfsException("Ne može se dekriptovati fajl!");
-            }
-            else
-            {
-                Process.Start(decryptedFile).WaitForExit();
-            }
-
-            File.Delete(decryptedSignature);
-            File.Delete(decryptedFile);
-        }
-
-        public static string ReadMessage(FileInfo infoFile, string username)
-        {
-            string content = null;
-            if (infoFile.Exists)
-            {
-                string privateKey = CERTS_PATH + "\\private\\" + username + "_private.key";
-                string tmpPath = TEMP_PATH + "\\tmp.txt";
-                string command = "openssl rsautl -decrypt -in " + infoFile.FullName + " -out " + tmpPath + " -inkey " + privateKey;
-                CommandPrompt.ExecuteCommand(command);
-                
-                content = File.ReadAllText(tmpPath);
-                if (string.IsNullOrEmpty(content))
-                    throw new EfsException("Nemate dozvolu za ovu operaciju!");
-
-                File.Delete(tmpPath);
-            }
-
-            return content;
-        }
 
     }
 }

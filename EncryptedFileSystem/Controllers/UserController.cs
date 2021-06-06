@@ -83,7 +83,6 @@ namespace EncryptedFileSystem.Controllers
             }
             catch (Exception e)
             {
-                //TODO: Mozda bi trebalo dodati malo srecniji exception handling 
                 Console.WriteLine(e.StackTrace + " : " + e.Message);
             }
 

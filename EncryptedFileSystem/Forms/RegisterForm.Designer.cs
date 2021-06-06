@@ -160,9 +160,20 @@ namespace EncryptedFileSystem.Forms
             this.cbEncrypt.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.cbEncrypt.FormattingEnabled = true;
             this.cbEncrypt.Items.AddRange(new object[] {
-            "aes",
+            "rc4",
             "des",
-            "rc4"});
+            "des3",
+            "desx",
+            "aes256",
+            "aes-256-ecb",
+            "aes-256-cbc",
+            "aria256",
+            "camellia256",
+            "cast5-cbc",
+            "idea",
+            "idea-ofb",
+            "sm4-cbc",
+            "sm4-ecb"});
             this.cbEncrypt.Location = new System.Drawing.Point(338, 301);
             this.cbEncrypt.Name = "cbEncrypt";
             this.cbEncrypt.Size = new System.Drawing.Size(219, 24);
