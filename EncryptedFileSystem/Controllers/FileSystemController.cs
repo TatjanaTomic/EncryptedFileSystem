@@ -54,6 +54,12 @@ namespace EncryptedFileSystem.Controllers
                     Process.Start(decryptedFile.FullName).WaitForExit();
                 }
 
+                //čuva se eventualna nova verzija fajla, ako je nešto bilo promijenjeno (npr. iz notepada)
+                //to će značiti da je narušen integritet fajla i fajl više neće biti upotrebljiv
+                selectedFile.Delete();
+                var newEncryptedFile = EncryptFile(decryptedFile, user.EncAlgorythm);
+                newEncryptedFile.MoveTo(selectedFile.FullName);
+
                 //brišu se dekriptovani fajlovi
                 decryptedFile.Delete();
                 decryptedSignature.Delete();
@@ -225,7 +231,6 @@ namespace EncryptedFileSystem.Controllers
 
         #endregion MyFiles
 
-
         #region SharedFiles
 
         public static void ShareFile(string senderName, string receiverName, FileInfo file, string algorythm, string password)
@@ -235,6 +240,7 @@ namespace EncryptedFileSystem.Controllers
             else
             {
                 User sender = UserController.ReadUserInfo(senderName);
+                UserController.ValidateCertificate(receiverName);
 
                 FileInfo fileSignature = new FileInfo(file.FullName.Insert(file.FullName.LastIndexOf('.'), "#"));
 
@@ -254,7 +260,7 @@ namespace EncryptedFileSystem.Controllers
                     //zatim u fajl sa nazivom 'message_posiljalac_datum_vrijemeSlanja' upisuju se redom:
                     //naziv poslanog fajla, simetricni algoritam kojim je originalni fajl kriptovan i kljuc za enkripciju
                     //taj fajl se kriptuje javnim kljucem primaoca tako da ce ga samo primalac moci dekriptovati
-                    string[] content = { file.Name, algorythm, password };
+                    string[] content = { sender.Name + "_" + file.Name, algorythm, password };
                     var encryptedInfoFile = EncryptInfoFile(senderName, receiverName, content);
 
                     //prethodni rezultati se smjestaju u shared folder, u folder sa nazivom primaoca
@@ -291,6 +297,10 @@ namespace EncryptedFileSystem.Controllers
                 decryptedFile.MoveTo(decryptedFile.DirectoryName + "\\" + file.Name);
                 Process.Start(decryptedFile.FullName).WaitForExit();
             }
+
+            file.Delete();
+            var newEncryptedFile = EncryptFile(decryptedFile, algorythm, key);
+            newEncryptedFile.MoveTo(file.FullName);
 
             decryptedSignature.Delete();
             decryptedFile.Delete();

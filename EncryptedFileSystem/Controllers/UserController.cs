@@ -51,14 +51,14 @@ namespace EncryptedFileSystem.Controllers
 
                 if (user != null)
                 {
-                    //TODO: Dodati provjeru validnosti sertifikata
+                    ValidateCertificate(username);
 
                     //Provjera lozinke
                     var passwordHash = Passwd(password, user.HashAlgorythm);
-                    if (passwordHash.Equals(user.Password))
-                        return user;
-                    else
+                    if (!passwordHash.Equals(user.Password))
                         throw new EfsException("Pogrešna lozinka!");
+                    else
+                        return user;
                 }
                 else
                     throw new EfsException("Došlo je do greške prilikom prijave na sistem!");
@@ -116,10 +116,109 @@ namespace EncryptedFileSystem.Controllers
             return exists;
         }
 
+        public static void ValidateCertificate(string username)
+        {
+            string path = CERTS_PATH + "\\certs\\" + username + ".crt";
+
+            if (!File.Exists(path))
+                throw new EfsException("Nije pronađen digitalni sertifikat korisnika " + username + "!");
+            else
+            {
+                string commandVerifyCrt = "openssl verify -trusted " + CERTS_PATH + "\\certs\\rootca.crt " + path;
+                var verified = CommandPrompt.ExecuteCommandWithResponse(commandVerifyCrt);
+                if(!verified.Contains("OK"))
+                    throw new EfsException("Digitalni sertifikat korisnika " + username + " nije izdat od strane tijela kome se vjeruje!");
+
+                string commandDates = "openssl x509 -in " + path + " -noout -dates";
+                var dates = CommandPrompt.ExecuteCommandWithResponse(commandDates);
+                if (!CheckDates(dates))
+                    throw new EfsException("Digitalni sertifikat korisnika " + username + " trenutno nije važeći!");
+
+                string commandSerialNumber = "openssl x509 -in " + path + " -noout -serial";
+                var serialNumber = CommandPrompt.ExecuteCommandWithResponse(commandSerialNumber).Trim().Substring(7);
+                if(IsRevoked(serialNumber))
+                    throw new EfsException("Digitalni sertifikat korisnika " + username + " je trenutno povučen iz upotrebe!");
+            }
+        }
+
         private static string Passwd(string password, string hashAlgorythm)
         {
             string command = "openssl passwd -" + hashAlgorythm + " -salt password " + password;
             return CommandPrompt.ExecuteCommandWithResponse(command).Trim();
+        }
+
+        private static bool CheckDates(string dates)
+        {
+            string notBefore = dates.Split('\n')[0].Substring(10).Trim().Replace("  ", " ");
+            string notAfter = dates.Split('\n')[1].Substring(9).Trim().Replace("  ", " ");
+
+            var partsNotBefore = notBefore.Split(' ');
+            var partsNotAfter = notAfter.Split(' ');
+
+            var notBeforeTime = partsNotBefore[2].Split(':');
+            var notAfterTime = partsNotAfter[2].Split(':');
+
+            DateTime dateTimeNotBef = new DateTime(int.Parse(partsNotBefore[3]), GetMonth(partsNotBefore[0]), int.Parse(partsNotBefore[1]), int.Parse(notBeforeTime[0]), int.Parse(notBeforeTime[1]), int.Parse(notBeforeTime[2]));
+            DateTime dateTimeNotAft = new DateTime(int.Parse(partsNotAfter[3]), GetMonth(partsNotAfter[0]), int.Parse(partsNotAfter[1]), int.Parse(notAfterTime[0]), int.Parse(notAfterTime[1]), int.Parse(notAfterTime[2]));
+
+            return (dateTimeNotBef < DateTime.Now) && (dateTimeNotAft > DateTime.Now);
+        }
+
+        private static bool IsRevoked(string serial)
+        {
+            string indexPath = CERTS_PATH + "\\index.txt";
+            var lines = File.ReadAllLines(indexPath);
+            foreach (var line in lines)
+                if (line.Contains("\t" + serial + "\t") && line.StartsWith("R\t"))
+                    return true;
+
+            return false;
+        }
+
+        private static int GetMonth(string month)
+        {
+            int monthNumber = 1;
+            switch(month)
+            {
+                case "Jan":
+                    monthNumber = 1;
+                    break;
+                case "Feb":
+                    monthNumber = 2;
+                    break;
+                case "Mar":
+                    monthNumber = 3;
+                    break;
+                case "Apr":
+                    monthNumber = 4;
+                    break;
+                case "May":
+                    monthNumber = 5;
+                    break;
+                case "Jun":
+                    monthNumber = 6;
+                    break;
+                case "Jul":
+                    monthNumber = 7;
+                    break;
+                case "Aug":
+                    monthNumber = 8;
+                    break;
+                case "Sep":
+                    monthNumber = 9;
+                    break;
+                case "Oct":
+                    monthNumber = 10;
+                    break;
+                case "Nov":
+                    monthNumber = 11;
+                    break;
+                case "Dec":
+                    monthNumber = 12;
+                    break;
+            }
+
+            return monthNumber;
         }
 
         #endregion
