@@ -101,6 +101,31 @@ namespace EncryptedFileSystem.Controllers
             return users;
         }
 
+        public static void ValidateCertificate(string username)
+        {
+            string path = CERTS_PATH + "\\certs\\" + username + ".crt";
+
+            if (!File.Exists(path))
+                throw new EfsException("Nije pronađen digitalni sertifikat korisnika " + username + "!");
+            else
+            {
+                string commandVerifyCrt = "openssl verify -trusted " + CERTS_PATH + "\\certs\\rootca.crt " + path;
+                var verified = CommandPrompt.ExecuteCommandWithResponse(commandVerifyCrt);
+                if (!verified.Contains("OK"))
+                    throw new EfsException("Digitalni sertifikat korisnika " + username + " nije izdat od strane tijela kome se vjeruje!");
+
+                string commandDates = "openssl x509 -in " + path + " -noout -dates";
+                var dates = CommandPrompt.ExecuteCommandWithResponse(commandDates);
+                if (!CheckDates(dates))
+                    throw new EfsException("Digitalni sertifikat korisnika " + username + " trenutno nije važeći!");
+
+                string commandSerialNumber = "openssl x509 -in " + path + " -noout -serial";
+                var serialNumber = CommandPrompt.ExecuteCommandWithResponse(commandSerialNumber).Trim().Substring(7);
+                if (IsRevoked(serialNumber))
+                    throw new EfsException("Digitalni sertifikat korisnika " + username + " je trenutno povučen iz upotrebe!");
+            }
+        }
+
         #region
 
         private static bool CheckNameExists(string name)
@@ -114,31 +139,6 @@ namespace EncryptedFileSystem.Controllers
                     exists = true;
 
             return exists;
-        }
-
-        public static void ValidateCertificate(string username)
-        {
-            string path = CERTS_PATH + "\\certs\\" + username + ".crt";
-
-            if (!File.Exists(path))
-                throw new EfsException("Nije pronađen digitalni sertifikat korisnika " + username + "!");
-            else
-            {
-                string commandVerifyCrt = "openssl verify -trusted " + CERTS_PATH + "\\certs\\rootca.crt " + path;
-                var verified = CommandPrompt.ExecuteCommandWithResponse(commandVerifyCrt);
-                if(!verified.Contains("OK"))
-                    throw new EfsException("Digitalni sertifikat korisnika " + username + " nije izdat od strane tijela kome se vjeruje!");
-
-                string commandDates = "openssl x509 -in " + path + " -noout -dates";
-                var dates = CommandPrompt.ExecuteCommandWithResponse(commandDates);
-                if (!CheckDates(dates))
-                    throw new EfsException("Digitalni sertifikat korisnika " + username + " trenutno nije važeći!");
-
-                string commandSerialNumber = "openssl x509 -in " + path + " -noout -serial";
-                var serialNumber = CommandPrompt.ExecuteCommandWithResponse(commandSerialNumber).Trim().Substring(7);
-                if(IsRevoked(serialNumber))
-                    throw new EfsException("Digitalni sertifikat korisnika " + username + " je trenutno povučen iz upotrebe!");
-            }
         }
 
         private static string Passwd(string password, string hashAlgorythm)
