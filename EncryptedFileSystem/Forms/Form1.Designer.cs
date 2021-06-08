@@ -44,7 +44,6 @@ namespace EncryptedFileSystem
             this.tbUsername.Name = "tbUsername";
             this.tbUsername.Size = new System.Drawing.Size(220, 26);
             this.tbUsername.TabIndex = 0;
-            this.tbUsername.Text = "zlatko";
             this.tbUsername.WordWrap = false;
             this.tbUsername.Click += new System.EventHandler(this.TbUsername_Click);
             // 
@@ -55,7 +54,6 @@ namespace EncryptedFileSystem
             this.tbPassword.Name = "tbPassword";
             this.tbPassword.Size = new System.Drawing.Size(220, 26);
             this.tbPassword.TabIndex = 1;
-            this.tbPassword.Text = "123";
             this.tbPassword.UseSystemPasswordChar = true;
             this.tbPassword.WordWrap = false;
             this.tbPassword.Click += new System.EventHandler(this.TbPassword_Click);
