@@ -182,7 +182,7 @@ basicConstraints=CA:FALSE
 # nsCertType = client, email, objsign
 
 # This is typical in keyUsage for a client certificate.
-#keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
 #keyUsage = digitalSignature
 extendedKeyUsage = clientAuth
 # This will be displayed in Netscape's comment listbox.

@@ -74,15 +74,20 @@ namespace EncryptedFileSystem.Forms
             // 
             // tbFileName
             // 
+            this.tbFileName.BackColor = System.Drawing.Color.White;
             this.tbFileName.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tbFileName.Location = new System.Drawing.Point(25, 36);
             this.tbFileName.Name = "tbFileName";
             this.tbFileName.ReadOnly = true;
             this.tbFileName.Size = new System.Drawing.Size(381, 24);
-            this.tbFileName.TabIndex = 3;
+            this.tbFileName.TabIndex = 0;
+            this.tbFileName.TabStop = false;
             // 
             // cbAlgorythms
             // 
+            this.cbAlgorythms.BackColor = System.Drawing.Color.White;
+            this.cbAlgorythms.Cursor = System.Windows.Forms.Cursors.Arrow;
+            this.cbAlgorythms.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbAlgorythms.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.cbAlgorythms.FormattingEnabled = true;
             this.cbAlgorythms.Items.AddRange(new object[] {
@@ -103,7 +108,7 @@ namespace EncryptedFileSystem.Forms
             this.cbAlgorythms.Location = new System.Drawing.Point(25, 172);
             this.cbAlgorythms.Name = "cbAlgorythms";
             this.cbAlgorythms.Size = new System.Drawing.Size(381, 26);
-            this.cbAlgorythms.TabIndex = 4;
+            this.cbAlgorythms.TabIndex = 2;
             // 
             // tbPassword
             // 
@@ -111,7 +116,7 @@ namespace EncryptedFileSystem.Forms
             this.tbPassword.Location = new System.Drawing.Point(25, 235);
             this.tbPassword.Name = "tbPassword";
             this.tbPassword.Size = new System.Drawing.Size(381, 24);
-            this.tbPassword.TabIndex = 5;
+            this.tbPassword.TabIndex = 3;
             this.tbPassword.UseSystemPasswordChar = true;
             // 
             // btnDecrypt
@@ -119,7 +124,7 @@ namespace EncryptedFileSystem.Forms
             this.btnDecrypt.Location = new System.Drawing.Point(303, 285);
             this.btnDecrypt.Name = "btnDecrypt";
             this.btnDecrypt.Size = new System.Drawing.Size(103, 33);
-            this.btnDecrypt.TabIndex = 6;
+            this.btnDecrypt.TabIndex = 4;
             this.btnDecrypt.Text = "Dekriptuj";
             this.btnDecrypt.UseVisualStyleBackColor = true;
             this.btnDecrypt.Click += new System.EventHandler(this.BtnDecrypt_Click);
@@ -129,19 +134,21 @@ namespace EncryptedFileSystem.Forms
             this.btnCancel.Location = new System.Drawing.Point(182, 285);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(103, 33);
-            this.btnCancel.TabIndex = 7;
+            this.btnCancel.TabIndex = 5;
             this.btnCancel.Text = "Otkaži";
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.BtnCancel_Click);
             // 
             // tbPath
             // 
+            this.tbPath.BackColor = System.Drawing.Color.White;
             this.tbPath.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tbPath.Location = new System.Drawing.Point(25, 105);
             this.tbPath.Name = "tbPath";
             this.tbPath.ReadOnly = true;
             this.tbPath.Size = new System.Drawing.Size(381, 24);
-            this.tbPath.TabIndex = 8;
+            this.tbPath.TabIndex = 1;
+            this.tbPath.TabStop = false;
             // 
             // label4
             // 
@@ -155,6 +162,7 @@ namespace EncryptedFileSystem.Forms
             // 
             // DecryptFileForm
             // 
+            this.AcceptButton = this.btnDecrypt;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImage = global::EncryptedFileSystem.Properties.Resources.cryptoBg;

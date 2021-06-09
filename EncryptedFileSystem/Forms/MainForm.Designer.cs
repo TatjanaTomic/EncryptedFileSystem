@@ -90,7 +90,7 @@ namespace EncryptedFileSystem.Forms
             this.btnUpload.Location = new System.Drawing.Point(22, 123);
             this.btnUpload.Name = "btnUpload";
             this.btnUpload.Size = new System.Drawing.Size(146, 41);
-            this.btnUpload.TabIndex = 3;
+            this.btnUpload.TabIndex = 2;
             this.btnUpload.Text = "Upload";
             this.btnUpload.UseVisualStyleBackColor = true;
             this.btnUpload.Click += new System.EventHandler(this.BtnUpload_Click);
@@ -100,7 +100,7 @@ namespace EncryptedFileSystem.Forms
             this.btnDownload.Location = new System.Drawing.Point(22, 170);
             this.btnDownload.Name = "btnDownload";
             this.btnDownload.Size = new System.Drawing.Size(146, 41);
-            this.btnDownload.TabIndex = 4;
+            this.btnDownload.TabIndex = 3;
             this.btnDownload.Text = "Download";
             this.btnDownload.UseVisualStyleBackColor = true;
             this.btnDownload.Click += new System.EventHandler(this.BtnDownload_Click);
@@ -110,7 +110,7 @@ namespace EncryptedFileSystem.Forms
             this.btnNewFile.Location = new System.Drawing.Point(22, 12);
             this.btnNewFile.Name = "btnNewFile";
             this.btnNewFile.Size = new System.Drawing.Size(146, 41);
-            this.btnNewFile.TabIndex = 5;
+            this.btnNewFile.TabIndex = 0;
             this.btnNewFile.Text = "Nova datoteka";
             this.btnNewFile.UseVisualStyleBackColor = true;
             this.btnNewFile.Click += new System.EventHandler(this.BtnNewFile_Click);
@@ -120,7 +120,7 @@ namespace EncryptedFileSystem.Forms
             this.btnEditFile.Location = new System.Drawing.Point(22, 59);
             this.btnEditFile.Name = "btnEditFile";
             this.btnEditFile.Size = new System.Drawing.Size(146, 41);
-            this.btnEditFile.TabIndex = 6;
+            this.btnEditFile.TabIndex = 1;
             this.btnEditFile.Text = "Uredi datoteku";
             this.btnEditFile.UseVisualStyleBackColor = true;
             this.btnEditFile.Click += new System.EventHandler(this.BtnEditFile_Click);
@@ -157,7 +157,7 @@ namespace EncryptedFileSystem.Forms
             this.SharedView.Name = "SharedView";
             this.SharedView.SelectedImageIndex = 6;
             this.SharedView.Size = new System.Drawing.Size(405, 215);
-            this.SharedView.TabIndex = 9;
+            this.SharedView.TabIndex = 1;
             this.SharedView.DoubleClick += new System.EventHandler(this.SharedView_DoubleClick);
             this.SharedView.KeyDown += new System.Windows.Forms.KeyEventHandler(this.SharedView_KeyDown);
             // 
@@ -175,7 +175,7 @@ namespace EncryptedFileSystem.Forms
             this.btnMakeDirectory.Location = new System.Drawing.Point(213, 59);
             this.btnMakeDirectory.Name = "btnMakeDirectory";
             this.btnMakeDirectory.Size = new System.Drawing.Size(146, 41);
-            this.btnMakeDirectory.TabIndex = 11;
+            this.btnMakeDirectory.TabIndex = 5;
             this.btnMakeDirectory.Text = "Kreiraj direktorijum";
             this.btnMakeDirectory.UseVisualStyleBackColor = true;
             this.btnMakeDirectory.Click += new System.EventHandler(this.BtnMakeDirectory_Click);
@@ -196,14 +196,14 @@ namespace EncryptedFileSystem.Forms
             this.tbMakeDirectory.Location = new System.Drawing.Point(213, 31);
             this.tbMakeDirectory.Name = "tbMakeDirectory";
             this.tbMakeDirectory.Size = new System.Drawing.Size(146, 22);
-            this.tbMakeDirectory.TabIndex = 13;
+            this.tbMakeDirectory.TabIndex = 4;
             // 
             // btnShareWith
             // 
             this.btnShareWith.Location = new System.Drawing.Point(209, 162);
             this.btnShareWith.Name = "btnShareWith";
             this.btnShareWith.Size = new System.Drawing.Size(146, 41);
-            this.btnShareWith.TabIndex = 14;
+            this.btnShareWith.TabIndex = 3;
             this.btnShareWith.Text = "Podijeli sa korisnikom";
             this.btnShareWith.UseVisualStyleBackColor = true;
             this.btnShareWith.Click += new System.EventHandler(this.BtnShareWith_Click);
@@ -224,7 +224,7 @@ namespace EncryptedFileSystem.Forms
             this.listBoxUsers.Location = new System.Drawing.Point(18, 30);
             this.listBoxUsers.Name = "listBoxUsers";
             this.listBoxUsers.Size = new System.Drawing.Size(146, 173);
-            this.listBoxUsers.TabIndex = 16;
+            this.listBoxUsers.TabIndex = 0;
             // 
             // label6
             // 
@@ -242,7 +242,7 @@ namespace EncryptedFileSystem.Forms
             this.tbPassword.Location = new System.Drawing.Point(209, 83);
             this.tbPassword.Name = "tbPassword";
             this.tbPassword.Size = new System.Drawing.Size(146, 22);
-            this.tbPassword.TabIndex = 19;
+            this.tbPassword.TabIndex = 2;
             this.tbPassword.UseSystemPasswordChar = true;
             // 
             // label8
@@ -257,6 +257,7 @@ namespace EncryptedFileSystem.Forms
             // 
             // cbAlgorythm
             // 
+            this.cbAlgorythm.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbAlgorythm.FormattingEnabled = true;
             this.cbAlgorythm.Items.AddRange(new object[] {
             "rc4",
@@ -276,7 +277,7 @@ namespace EncryptedFileSystem.Forms
             this.cbAlgorythm.Location = new System.Drawing.Point(209, 30);
             this.cbAlgorythm.Name = "cbAlgorythm";
             this.cbAlgorythm.Size = new System.Drawing.Size(146, 21);
-            this.cbAlgorythm.TabIndex = 22;
+            this.cbAlgorythm.TabIndex = 1;
             // 
             // panel1
             // 
@@ -304,7 +305,7 @@ namespace EncryptedFileSystem.Forms
             this.panel2.Location = new System.Drawing.Point(478, 47);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(377, 221);
-            this.panel2.TabIndex = 24;
+            this.panel2.TabIndex = 1;
             // 
             // label7
             // 

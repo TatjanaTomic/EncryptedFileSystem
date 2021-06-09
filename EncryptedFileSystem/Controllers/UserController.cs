@@ -35,8 +35,13 @@ namespace EncryptedFileSystem.Controllers
 
                 if (File.Exists(CERTS_PATH + "\\private\\" + user.Name + "_private.key")
                     && File.Exists(CERTS_PATH + "\\certs\\" + user.Name + ".crt"))
-
+                {
                     user.WriteInfo();
+                }
+                else
+                {
+                    throw new EfsException("Došlo je do greške prilikom rgistracije!");
+                }
 
             }
         }

@@ -51,6 +51,7 @@ namespace EncryptedFileSystem.Forms
             this.tbUsername.TabIndex = 0;
             this.tbUsername.WordWrap = false;
             this.tbUsername.Click += new System.EventHandler(this.TbUsername_Click);
+            this.tbUsername.TextChanged += new System.EventHandler(this.TbUsername_Click);
             // 
             // tbPassword
             // 
@@ -62,6 +63,7 @@ namespace EncryptedFileSystem.Forms
             this.tbPassword.UseSystemPasswordChar = true;
             this.tbPassword.WordWrap = false;
             this.tbPassword.Click += new System.EventHandler(this.TbPassword_Click);
+            this.tbPassword.TextChanged += new System.EventHandler(this.TbPassword_Click);
             // 
             // lbUsername
             // 
@@ -93,7 +95,7 @@ namespace EncryptedFileSystem.Forms
             this.btnRegister.Location = new System.Drawing.Point(371, 373);
             this.btnRegister.Name = "btnRegister";
             this.btnRegister.Size = new System.Drawing.Size(166, 41);
-            this.btnRegister.TabIndex = 4;
+            this.btnRegister.TabIndex = 5;
             this.btnRegister.Text = "Registrujte se";
             this.btnRegister.UseVisualStyleBackColor = false;
             this.btnRegister.Click += new System.EventHandler(this.BtnRegister_Click);
@@ -115,13 +117,16 @@ namespace EncryptedFileSystem.Forms
             this.tbRepeatedPassword.Location = new System.Drawing.Point(338, 174);
             this.tbRepeatedPassword.Name = "tbRepeatedPassword";
             this.tbRepeatedPassword.Size = new System.Drawing.Size(220, 26);
-            this.tbRepeatedPassword.TabIndex = 5;
+            this.tbRepeatedPassword.TabIndex = 2;
             this.tbRepeatedPassword.UseSystemPasswordChar = true;
             this.tbRepeatedPassword.WordWrap = false;
             this.tbRepeatedPassword.Click += new System.EventHandler(this.TbRepeatedPassword_Click);
+            this.tbRepeatedPassword.TextChanged += new System.EventHandler(this.TbRepeatedPassword_Click);
             // 
             // cbHash
             // 
+            this.cbHash.BackColor = System.Drawing.Color.White;
+            this.cbHash.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbHash.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.cbHash.FormattingEnabled = true;
             this.cbHash.Items.AddRange(new object[] {
@@ -131,7 +136,7 @@ namespace EncryptedFileSystem.Forms
             this.cbHash.Location = new System.Drawing.Point(338, 238);
             this.cbHash.Name = "cbHash";
             this.cbHash.Size = new System.Drawing.Size(219, 24);
-            this.cbHash.TabIndex = 7;
+            this.cbHash.TabIndex = 3;
             // 
             // lbHash
             // 
@@ -157,6 +162,7 @@ namespace EncryptedFileSystem.Forms
             // 
             // cbEncrypt
             // 
+            this.cbEncrypt.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbEncrypt.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.cbEncrypt.FormattingEnabled = true;
             this.cbEncrypt.Items.AddRange(new object[] {
@@ -177,10 +183,11 @@ namespace EncryptedFileSystem.Forms
             this.cbEncrypt.Location = new System.Drawing.Point(338, 301);
             this.cbEncrypt.Name = "cbEncrypt";
             this.cbEncrypt.Size = new System.Drawing.Size(219, 24);
-            this.cbEncrypt.TabIndex = 9;
+            this.cbEncrypt.TabIndex = 4;
             // 
             // RegisterForm
             // 
+            this.AcceptButton = this.btnRegister;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImage = global::EncryptedFileSystem.Properties.Resources.cryptoBg;

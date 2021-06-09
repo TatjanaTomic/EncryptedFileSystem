@@ -72,7 +72,7 @@ namespace EncryptedFileSystem.Forms
             this.tbName.Location = new System.Drawing.Point(12, 36);
             this.tbName.Name = "tbName";
             this.tbName.Size = new System.Drawing.Size(760, 24);
-            this.tbName.TabIndex = 1;
+            this.tbName.TabIndex = 0;
             this.tbName.TextChanged += new System.EventHandler(this.TbName_TextChanged);
             // 
             // lbName
@@ -108,7 +108,8 @@ namespace EncryptedFileSystem.Forms
             this.tbPath.Name = "tbPath";
             this.tbPath.ReadOnly = true;
             this.tbPath.Size = new System.Drawing.Size(761, 29);
-            this.tbPath.TabIndex = 4;
+            this.tbPath.TabIndex = 1;
+            this.tbPath.TabStop = false;
             // 
             // btnSave
             // 
@@ -116,7 +117,7 @@ namespace EncryptedFileSystem.Forms
             this.btnSave.Location = new System.Drawing.Point(672, 463);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(100, 38);
-            this.btnSave.TabIndex = 5;
+            this.btnSave.TabIndex = 2;
             this.btnSave.Text = "Sačuvajte";
             this.btnSave.UseVisualStyleBackColor = true;
             this.btnSave.Click += new System.EventHandler(this.BtnSave_Click);
@@ -127,13 +128,14 @@ namespace EncryptedFileSystem.Forms
             this.btnCancel.Location = new System.Drawing.Point(566, 463);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(100, 38);
-            this.btnCancel.TabIndex = 6;
+            this.btnCancel.TabIndex = 3;
             this.btnCancel.Text = "Otkažite";
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.BtnCancel_Click);
             // 
             // MyFileForm
             // 
+            this.AcceptButton = this.btnSave;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));

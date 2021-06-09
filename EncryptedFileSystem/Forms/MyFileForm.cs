@@ -25,26 +25,35 @@ namespace EncryptedFileSystem.Forms
             this.username = username;
             currentPath = path;
 
+            tbText.Text = content;
+            
+            //prilagodjen izgled za prikaz poruke o share-ovanom fajlu
             if (isMessage)
             {
                 tbName.Text = name;
                 tbName.ReadOnly = true;
+                tbName.TabStop = false;
                 tbPath.Text = path;
                 tbText.ReadOnly = true;
+                tbText.TabStop = false;
                 btnCancel.Visible = false;
                 btnSave.Visible = false;
             }
+
+            //prilagodjen izgled za kreiranje novog fajla
             else
             {
                 tbPath.Text = "\\" + path + "\\" + name;
+
+                //prilagođen izgled za modifikovanje fajla
                 if (!string.IsNullOrEmpty(name))
                 {
                     tbName.Text = name;
                     tbName.ReadOnly = true;
+                    tbName.TabStop = false;
                     createNew = false;
                 }
             }
-            tbText.Text = content;
         }
 
         private void TbName_TextChanged(object sender, EventArgs e)

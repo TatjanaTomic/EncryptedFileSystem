@@ -46,6 +46,7 @@ namespace EncryptedFileSystem
             this.tbUsername.TabIndex = 0;
             this.tbUsername.WordWrap = false;
             this.tbUsername.Click += new System.EventHandler(this.TbUsername_Click);
+            this.tbUsername.TextChanged += new System.EventHandler(this.TbUsername_Click);
             // 
             // tbPassword
             // 
@@ -57,6 +58,7 @@ namespace EncryptedFileSystem
             this.tbPassword.UseSystemPasswordChar = true;
             this.tbPassword.WordWrap = false;
             this.tbPassword.Click += new System.EventHandler(this.TbPassword_Click);
+            this.tbPassword.TextChanged += new System.EventHandler(this.TbPassword_Click);
             // 
             // lbUsername
             // 
@@ -88,7 +90,7 @@ namespace EncryptedFileSystem
             this.btnLogin.Location = new System.Drawing.Point(334, 265);
             this.btnLogin.Name = "btnLogin";
             this.btnLogin.Size = new System.Drawing.Size(166, 41);
-            this.btnLogin.TabIndex = 4;
+            this.btnLogin.TabIndex = 2;
             this.btnLogin.Text = "Prijavite se";
             this.btnLogin.UseVisualStyleBackColor = false;
             this.btnLogin.Click += new System.EventHandler(this.BtnLogin_Click);
@@ -102,12 +104,13 @@ namespace EncryptedFileSystem
             this.lbRegister.Location = new System.Drawing.Point(366, 328);
             this.lbRegister.Name = "lbRegister";
             this.lbRegister.Size = new System.Drawing.Size(98, 18);
-            this.lbRegister.TabIndex = 5;
+            this.lbRegister.TabIndex = 3;
             this.lbRegister.Text = "Registrujte se";
             this.lbRegister.Click += new System.EventHandler(this.LbRegister_Click);
             // 
             // LoginForm
             // 
+            this.AcceptButton = this.btnLogin;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImage = global::EncryptedFileSystem.Properties.Resources.cryptoBg;
