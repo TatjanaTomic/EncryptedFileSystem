@@ -295,6 +295,7 @@ namespace EncryptedFileSystem.Forms
                 try
                 {
                     FileSystemController.MakeDirectory(GetRelativePath(), name.Replace(' ', '_'));
+                    tbMakeDirectory.Text = string.Empty;
                     LoadFiles();
                 }
                 catch (EfsException ex)
@@ -341,6 +342,8 @@ namespace EncryptedFileSystem.Forms
                 try
                 {
                     FileSystemController.ShareFile(username, receiver, selectedFile, cbAlgorythm.SelectedItem.ToString(), password);
+                    tbPassword.Text = string.Empty;
+                    cbAlgorythm.SelectedIndex = 0;
                     LoadFiles();
                 }
                 catch (EfsException ex)

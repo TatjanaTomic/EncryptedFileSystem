@@ -26,13 +26,16 @@ namespace EncryptedFileSystem.Controllers
             string absolutePath = FS_PATH + "\\" + relativePath + "\\" + name;
 
             if (Directory.Exists(absolutePath))
-                throw new EfsException("Već postoji direktorijum sa unesenim nazivom na izabranoj putanji!");
+                throw new EfsException("Na izabranoj putanji postoji direktorijum sa unesenim nazivom! Unesite novi naziv.");
             else
                 Directory.CreateDirectory(absolutePath);
         }
 
         public static void OpenFile(FileInfo selectedFile, string username)
         {
+            Directory.Delete(TEMP_PATH, true);
+            Directory.CreateDirectory(TEMP_PATH);
+
             User user = UserController.ReadUserInfo(username);
             if (selectedFile.Exists)
             {
@@ -51,7 +54,19 @@ namespace EncryptedFileSystem.Controllers
                     //preimenuje se dekriptovani fajl u naziv originalnog fajla zbog prikaza u odgovarajućem programu
                     decryptedFile.MoveTo(decryptedFile.DirectoryName + "\\" + selectedFile.Name);
                     //pokreće se proces koji otvara datoteku u podrazumijevanom programu
-                    Process.Start(decryptedFile.FullName).WaitForExit();
+                    try
+                    {
+                        Process p = new Process
+                        {
+                            StartInfo = new ProcessStartInfo(decryptedFile.FullName)
+                        };
+                        p.Start();
+                        p.WaitForExit();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.StackTrace + " : " + e.Message);
+                    }
                 }
 
                 //čuva se eventualna nova verzija fajla, ako je nešto bilo promijenjeno (npr. iz notepada)
@@ -182,24 +197,22 @@ namespace EncryptedFileSystem.Controllers
                 {
                     string newPath = efsPath + "\\" + selectedFile.Name.Replace(' ', '_').Replace('#', '_');
                     if (File.Exists(newPath))
-                        throw new EfsException("Na izabranoj putanji postoji datoteka sa istim nazivom!");
-                    else
-                    {
-                        string tmpPath = TEMP_PATH + "\\" + selectedFile.Name.Replace(' ', '_').Replace('#', '_');
+                        newPath = GetNewPath(newPath);
+                    
+                    string tmpPath = TEMP_PATH + "\\" + selectedFile.Name.Replace(' ', '_').Replace('#', '_');
 
-                        File.Copy(hostPath, tmpPath);
-                        FileInfo newFile = new FileInfo(tmpPath);
-                        var fileSignature = Digest(user.Name, user.HashAlgorythm, newFile);
+                    File.Copy(hostPath, tmpPath);
+                    FileInfo newFile = new FileInfo(tmpPath);
+                    var fileSignature = Digest(user.Name, user.HashAlgorythm, newFile);
 
-                        var newFileEnc = EncryptFile(newFile, user.EncAlgorythm);
-                        var fileSignatureEnc = EncryptFile(fileSignature, user.EncAlgorythm);
+                    var newFileEnc = EncryptFile(newFile, user.EncAlgorythm);
+                    var fileSignatureEnc = EncryptFile(fileSignature, user.EncAlgorythm);
 
-                        newFileEnc.MoveTo(newPath);
-                        fileSignatureEnc.MoveTo(newPath.Insert(newPath.LastIndexOf('.'), "#"));
+                    newFileEnc.MoveTo(newPath);
+                    fileSignatureEnc.MoveTo(newPath.Insert(newPath.LastIndexOf('.'), "#"));
 
-                        newFile.Delete();
-                        fileSignature.Delete();
-                    }
+                    newFile.Delete();
+                    fileSignature.Delete();                    
                 }
             }
         }
@@ -208,6 +221,8 @@ namespace EncryptedFileSystem.Controllers
         {
             User user = UserController.ReadUserInfo(username);
             string hostPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\" + selectedFile.Name;
+            if(File.Exists(hostPath))
+                hostPath = GetNewPath(hostPath);
 
             FileInfo fileSignature = new FileInfo(selectedFile.FullName.Insert(selectedFile.FullName.LastIndexOf('.'), "#"));
 
@@ -249,9 +264,23 @@ namespace EncryptedFileSystem.Controllers
                 var decryptedSignature = DecryptFile(fileSignature, sender.EncAlgorythm);
 
                 if (!Verify(sender.Name, sender.HashAlgorythm, decryptedFile, decryptedSignature))
+                {
+                    decryptedFile.Delete();
+                    decryptedSignature.Delete();
+
                     throw new EfsException("Ne možete podijeliti datoteku jer je njen integritet narušen!");
+                }
                 else
                 {
+                    string destinationPath = SHARED_PATH + "\\" + receiverName;
+                    if (!Directory.Exists(destinationPath))
+                        Directory.CreateDirectory(destinationPath);
+
+                    string sharedFilePath = destinationPath + "\\" + senderName + "_" + file.Name;
+                    if (File.Exists(sharedFilePath))
+                        sharedFilePath = GetNewPath(sharedFilePath);
+                    var sharedFile = new FileInfo(sharedFilePath);
+
                     //kriptuju se originalni fajl i digitalno potpisan originalni fajl
                     //algoritmom i lozinkom koju je korisnik unio prilikom dijeljenja fajla
                     var fileEnc = EncryptFile(decryptedFile, algorythm, password);
@@ -260,17 +289,14 @@ namespace EncryptedFileSystem.Controllers
                     //zatim u fajl sa nazivom 'message_posiljalac_datum_vrijemeSlanja' upisuju se redom:
                     //naziv poslanog fajla, simetricni algoritam kojim je originalni fajl kriptovan i kljuc za enkripciju
                     //taj fajl se kriptuje javnim kljucem primaoca tako da ce ga samo primalac moci dekriptovati
-                    string[] content = { sender.Name + "_" + file.Name, algorythm, password };
+                    string[] content = { sharedFile.Name, algorythm, password };
                     var encryptedInfoFile = EncryptInfoFile(senderName, receiverName, content);
 
-                    //prethodni rezultati se smjestaju u shared folder, u folder sa nazivom primaoca
-                    string destinationPath = SHARED_PATH + "\\" + receiverName;
-                    if (!Directory.Exists(destinationPath))
-                        Directory.CreateDirectory(destinationPath);
-
+                    //nakon sto se sve zavrsi, message file, enkriptovan originalni fajl i enkriptovan digitalno potpisan fajl
+                    //se smjestaju u odredisni folder
                     encryptedInfoFile.MoveTo(destinationPath + "\\" + encryptedInfoFile.Name.Remove(0, 3));
-                    fileEnc.MoveTo(destinationPath + "\\" + senderName + "_" + file.Name);
-                    signatureEnc.MoveTo(destinationPath + "\\" + senderName + "_" + file.Name.Insert(file.Name.LastIndexOf('.'), "#"));
+                    fileEnc.MoveTo(sharedFilePath);
+                    signatureEnc.MoveTo(sharedFilePath.Insert(sharedFilePath.LastIndexOf('.'), "#"));
 
                     decryptedFile.Delete();
                     decryptedSignature.Delete();
@@ -280,6 +306,9 @@ namespace EncryptedFileSystem.Controllers
 
         public static void DecryptSharedFile(string path, string algorythm, string key)
         {
+            Directory.Delete(TEMP_PATH, true);
+            Directory.CreateDirectory(TEMP_PATH);
+
             FileInfo file = new FileInfo(path);
             FileInfo fileSignature = new FileInfo(path.Insert(path.LastIndexOf("."), "#"));
 
@@ -294,8 +323,21 @@ namespace EncryptedFileSystem.Controllers
             }
             else
             {
+                //preimenuje se dekriptovani fajl zbog prikaza korisiku
                 decryptedFile.MoveTo(decryptedFile.DirectoryName + "\\" + file.Name);
-                Process.Start(decryptedFile.FullName).WaitForExit();
+                try
+                {
+                    Process p = new Process
+                    {
+                        StartInfo = new ProcessStartInfo(decryptedFile.FullName)
+                    };
+                    p.Start();
+                    p.WaitForExit();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.StackTrace + " : " + e.Message);
+                }
             }
 
             file.Delete();
@@ -408,6 +450,19 @@ namespace EncryptedFileSystem.Controllers
             }
 
             return hashAlgorythm;
+        }
+
+        private static string GetNewPath(string path, string newPath = "", int number = 0)
+        {
+            number += 1;
+            newPath = path.Insert(path.LastIndexOf('.'), "(" + number + ")" );
+
+            if (File.Exists(newPath))
+            {
+                newPath = GetNewPath(path, newPath, number);
+            }
+            
+            return newPath;
         }
 
         #endregion HelpMethods
